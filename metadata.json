@@ -1,0 +1,6 @@
+{
+  "name": "Kadu Manutenções",
+  "description": "Aplicativo móvel e online para gestão de manutenção técnica, ordens de serviço e relatórios profissionais com fotos em PDF.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

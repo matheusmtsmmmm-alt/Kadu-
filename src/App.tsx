@@ -13,7 +13,11 @@ import {
   Eye, 
   ChevronRight,
   Wifi,
-  Sparkles
+  Sparkles,
+  Lock,
+  KeyRound,
+  X,
+  Delete
 } from 'lucide-react';
 import { 
   AppStateData, 
@@ -48,7 +52,68 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeView, setActiveView] = useState<ActiveView>('home');
-  const [settingsInitialTab, setSettingsInitialTab] = useState<'empresa' | 'equipe' | 'maquinas' | 'clientes' | 'checklist' | 'online'>('empresa');
+  const [settingsInitialTab, setSettingsInitialTab] = useState<'empresa' | 'maquinas' | 'relatorios' | 'equipe' | 'clientes' | 'checklist' | 'online'>('empresa');
+
+  // PIN Security Modal for Settings (Password: 1111)
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pendingTab, setPendingTab] = useState<'empresa' | 'maquinas' | 'relatorios' | 'equipe' | 'clientes' | 'checklist' | 'online'>('empresa');
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+
+  const handleOpenSettings = (tab: 'empresa' | 'maquinas' | 'relatorios' | 'equipe' | 'clientes' | 'checklist' | 'online' = 'empresa') => {
+    setPendingTab(tab);
+    setPinInput('');
+    setPinError('');
+    setShowPinModal(true);
+  };
+
+  const handleVerifyPin = (val: string) => {
+    const requiredPin = data?.companySettings?.adminPin || '1111';
+    if (val === requiredPin || val === '1111') {
+      setShowPinModal(false);
+      setPinInput('');
+      setPinError('');
+      setSettingsInitialTab(pendingTab);
+      setActiveView('settings');
+    } else {
+      setPinError(`Senha incorreta! Digite ${requiredPin}.`);
+      setPinInput('');
+    }
+  };
+
+  const handlePinDigit = (digit: string) => {
+    if (pinInput.length < 4) {
+      const next = pinInput + digit;
+      setPinInput(next);
+      setPinError('');
+      if (next.length === 4) {
+        handleVerifyPin(next);
+      }
+    }
+  };
+
+  const handleBackspace = () => {
+    setPinInput(prev => prev.slice(0, -1));
+    setPinError('');
+  };
+
+  // Keyboard listener for physical computer keyboards (never triggers mobile virtual keyboard)
+  useEffect(() => {
+    if (!showPinModal) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key >= '0' && e.key <= '9') {
+        handlePinDigit(e.key);
+      } else if (e.key === 'Backspace') {
+        handleBackspace();
+      } else if (e.key === 'Escape') {
+        setShowPinModal(false);
+        setPinInput('');
+        setPinError('');
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [showPinModal, pinInput, pendingTab, data]);
 
   // Modals
   const [justFinishedReport, setJustFinishedReport] = useState<MaintenanceReport | null>(null);
@@ -224,12 +289,9 @@ export default function App() {
               </div>
 
               <div 
-                onClick={() => {
-                  setSettingsInitialTab('maquinas');
-                  setActiveView('settings');
-                }}
+                onClick={() => handleOpenSettings('maquinas')}
                 className="bg-white border border-slate-200/80 rounded-2xl p-3.5 text-center shadow-xs cursor-pointer hover:border-blue-400 active:scale-95 transition-all"
-                title="Abrir gestão de máquinas nas Configurações"
+                title="Abrir gestão de máquinas nas Configurações (requer senha)"
               >
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight block">
                   Máquinas
@@ -243,14 +305,14 @@ export default function App() {
             {/* Action Buttons:
                 [ + NOVO RELATÓRIO ]
                 [ HISTÓRICO ]
-                [ ⚙ CONFIGURAÇÕES ] (Com Máquinas, Equipe, Clientes, Checklist e Empresa)
+                [ ⚙ CONFIGURAÇÕES ] (Protegido por senha 1111)
             */}
             <nav aria-label="Ações principais" className="flex flex-col gap-3">
               {/* 1. NOVO RELATÓRIO (HERO CTA) */}
               <button
                 type="button"
                 onClick={() => setActiveView('new_report')}
-                className="w-full h-18 bg-blue-900 hover:bg-blue-800 active:scale-[0.98] text-white font-extrabold text-lg sm:text-xl rounded-2xl flex items-center justify-between px-6 shadow-xl shadow-blue-950/20 transition-all border border-blue-800 group"
+                className="w-full h-18 bg-blue-900 hover:bg-blue-800 active:scale-[0.98] text-white font-extrabold text-lg sm:text-xl rounded-2xl flex items-center justify-between px-6 shadow-xl shadow-blue-950/20 transition-all border border-blue-800 group cursor-pointer"
               >
                 <div className="flex items-center gap-3.5">
                   <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-blue-300 group-hover:scale-105 transition-transform">
@@ -270,7 +332,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setActiveView('history')}
-                className="w-full h-16 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-900 font-black text-base sm:text-lg rounded-2xl flex items-center justify-between px-6 border border-slate-200/90 shadow-xs transition-all"
+                className="w-full h-16 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-900 font-black text-base sm:text-lg rounded-2xl flex items-center justify-between px-6 border border-slate-200/90 shadow-xs transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
@@ -288,78 +350,29 @@ export default function App() {
                 </span>
               </button>
 
-              {/* 3. CONFIGURAÇÕES (Inclui Máquinas, Equipe, Clientes, Checklist e Empresa) */}
+              {/* 3. CONFIGURAÇÕES (Protegido com Senha 1111) */}
               <button
                 type="button"
-                onClick={() => {
-                  setSettingsInitialTab('empresa');
-                  setActiveView('settings');
-                }}
-                className="w-full h-16 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-900 font-black text-base sm:text-lg rounded-2xl flex items-center justify-between px-6 border border-slate-200/90 shadow-xs transition-all"
+                onClick={() => handleOpenSettings('empresa')}
+                className="w-full h-16 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-900 font-black text-base sm:text-lg rounded-2xl flex items-center justify-between px-6 border border-slate-200/90 shadow-xs transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
                     <SettingsIcon className="w-5 h-5" />
                   </div>
                   <div className="text-left">
-                    <span className="block leading-tight">CONFIGURAÇÕES</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="block leading-tight">CONFIGURAÇÕES</span>
+                      <Lock className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
                     <span className="text-xs text-slate-500 font-medium">
-                      Máquinas, equipe, checklist, logo e dados
+                      Máquinas, relatórios, equipe, checklist e dados
                     </span>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-slate-400" />
               </button>
             </nav>
-
-            {/* Quick Recent Reports Stream */}
-            {data && data.reports.length > 0 && (
-              <section aria-label="Relatórios recentes" className="pt-2">
-                <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Últimos Relatórios Concluídos
-                  </span>
-                  <button
-                    onClick={() => setActiveView('history')}
-                    className="text-xs font-bold text-blue-900 hover:underline"
-                  >
-                    Ver todos
-                  </button>
-                </div>
-
-                <div className="space-y-2.5">
-                  {data.reports.slice(0, 3).map((r) => (
-                    <div
-                      key={r.id}
-                      onClick={() => setViewingPdfReport(r)}
-                      className="bg-white border border-slate-200 rounded-2xl p-3.5 flex items-center justify-between gap-3 cursor-pointer hover:border-blue-400 transition-all shadow-2xs active:bg-slate-50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center shrink-0">
-                          <FileText className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-extrabold font-mono text-blue-900">{r.code}</span>
-                            <span className="text-xs font-bold text-slate-800 truncate max-w-[160px] sm:max-w-xs">{r.machine.name}</span>
-                          </div>
-                          <p className="text-[11px] text-slate-500 mt-0.5">
-                            {r.date}  •  {r.technician.name}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">
-                          PDF Pronto
-                        </span>
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
 
             {/* Footer info */}
             <footer className="mt-auto pt-6 text-center text-xs text-slate-400">
@@ -403,7 +416,7 @@ export default function App() {
       )}
 
       {/* ============================================================== */}
-      {/* 4. CONFIGURAÇÕES VIEW (Com Máquinas Integrada) */}
+      {/* 4. CONFIGURAÇÕES VIEW (Com Máquinas e Relatórios Integrados) */}
       {/* ============================================================== */}
       {(activeView === 'settings' || activeView === 'machines') && data && (
         <SettingsView
@@ -413,8 +426,10 @@ export default function App() {
           checklistTemplate={data.checklistTemplate}
           clients={data.clients}
           machines={data.machines}
+          reports={data.reports}
           initialTab={activeView === 'machines' ? 'maquinas' : settingsInitialTab}
           onBack={() => setActiveView('home')}
+          onViewPdf={(report) => setViewingPdfReport(report)}
           onSaveAllSettings={handleSaveAllSettings}
           onSaveClient={handleSaveClient}
           onDeleteClient={handleDeleteClient}
@@ -447,6 +462,125 @@ export default function App() {
           settings={company}
           onClose={() => setViewingPdfReport(null)}
         />
+      )}
+
+      {/* ============================================================== */}
+      {/* PIN SECURITY MODAL (SENHA 1111 PARA CONFIGURAÇÕES) */}
+      {/* ============================================================== */}
+      {showPinModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-xs w-full p-6 shadow-2xl border border-slate-200 text-center animate-in fade-in zoom-in-95 relative">
+            {/* Close button */}
+            <button
+              onClick={() => {
+                setShowPinModal(false);
+                setPinInput('');
+                setPinError('');
+              }}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Icon */}
+            <div className="w-14 h-14 bg-blue-50 text-blue-900 border border-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-xs">
+              <Lock className="w-7 h-7" />
+            </div>
+
+            <h3 className="text-lg font-extrabold text-slate-900 leading-tight">
+              Acesso Restrito
+            </h3>
+            <p className="text-xs text-slate-500 mt-1 mb-4">
+              Digite a senha de 4 dígitos para acessar as configurações do sistema
+            </p>
+
+            {/* Visual PIN Dots */}
+            <div className="flex justify-center items-center gap-3.5 mb-3">
+              {[0, 1, 2, 3].map((idx) => {
+                const isFilled = pinInput.length > idx;
+                return (
+                  <div
+                    key={idx}
+                    className={`w-4 h-4 rounded-full border-2 transition-all ${
+                      isFilled
+                        ? 'bg-blue-900 border-blue-900 scale-125 shadow-xs'
+                        : pinError
+                        ? 'border-red-400 bg-red-50'
+                        : 'border-slate-300 bg-slate-50'
+                    }`}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Error Message */}
+            {pinError ? (
+              <div className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 py-1.5 px-3 rounded-xl mb-3 animate-shake">
+                {pinError}
+              </div>
+            ) : (
+              <div className="text-[11px] font-medium text-slate-400 mb-3">
+                Dica: senha padrão <span className="font-mono font-bold text-slate-600">{data?.companySettings?.adminPin || '1111'}</span>
+              </div>
+            )}
+
+            {/* Tactile Keypad - ONLY in-app keyboard, no mobile OS keyboard */}
+            <div className="grid grid-cols-3 gap-2.5 mb-4 select-none touch-manipulation">
+              {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+                <button
+                  key={digit}
+                  type="button"
+                  onClick={() => handlePinDigit(digit)}
+                  className="h-13 bg-slate-100 hover:bg-slate-200 active:bg-blue-900 active:text-white active:scale-95 text-slate-800 font-extrabold text-xl rounded-2xl transition-all flex items-center justify-center cursor-pointer shadow-xs select-none touch-manipulation"
+                >
+                  {digit}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setPinInput('');
+                  setPinError('');
+                }}
+                className="h-13 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 active:scale-95 text-slate-500 font-bold text-xs rounded-2xl transition-all flex items-center justify-center cursor-pointer select-none touch-manipulation"
+                title="Limpar"
+              >
+                C
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handlePinDigit('0')}
+                className="h-13 bg-slate-100 hover:bg-slate-200 active:bg-blue-900 active:text-white active:scale-95 text-slate-800 font-extrabold text-xl rounded-2xl transition-all flex items-center justify-center cursor-pointer shadow-xs select-none touch-manipulation"
+              >
+                0
+              </button>
+
+              <button
+                type="button"
+                onClick={handleBackspace}
+                className="h-13 bg-slate-100 hover:bg-slate-200 active:bg-red-100 active:text-red-700 active:scale-95 text-slate-600 font-bold text-sm rounded-2xl transition-all flex items-center justify-center cursor-pointer select-none touch-manipulation"
+                title="Apagar"
+              >
+                <Delete className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Cancel Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setShowPinModal(false);
+                setPinInput('');
+                setPinError('');
+              }}
+              className="w-full h-10 text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

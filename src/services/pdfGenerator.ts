@@ -108,51 +108,72 @@ export async function generateReportPdf(report: MaintenanceReport, settings: Com
     doc.setFontSize(9);
     doc.text('KADU MANUTENÇÕES', margin + 4, currentY + 5.5);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Relatório ${report.code} - ${report.machine.name}`, pageWidth - margin - 4, currentY + 5.5, { align: 'right' });
+    const cleanCodeMini = (report.code || '').replace(/^#/, '');
+    doc.text(`Relatório ${cleanCodeMini} - ${report.machine.name}`, pageWidth - margin - 4, currentY + 5.5, { align: 'right' });
     currentY += 12;
   }
 
   // --- 1. TOP HEADER ---
+  const headerHeight = 35;
   // Header container background
   doc.setFillColor(primaryNavy[0], primaryNavy[1], primaryNavy[2]);
-  doc.roundedRect(margin, currentY, contentWidth, 32, 2, 2, 'F');
+  doc.roundedRect(margin, currentY, contentWidth, headerHeight, 2, 2, 'F');
 
-  // Logo
+  // Logo (Left)
   if (logoBase64) {
     try {
-      doc.addImage(logoBase64, 'JPEG', margin + 4, currentY + 4, 24, 24);
+      doc.addImage(logoBase64, 'JPEG', margin + 4, currentY + 4.5, 26, 26);
     } catch {
       // Fallback text
     }
   }
 
-  // Company Name & Subtitle
-  const textLeft = logoBase64 ? margin + 32 : margin + 6;
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text(settings.companyName || 'KADU MANUTENÇÕES', textLeft, currentY + 11);
+  // Report Badge Right (Dedicated space, no overlapping text)
+  const badgeWidth = 42;
+  const badgeHeight = 25;
+  const badgeX = pageWidth - margin - badgeWidth - 4;
+  const badgeY = currentY + 5;
+  const badgeCenterX = badgeX + badgeWidth / 2;
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(203, 213, 225); // slate-300
-  doc.text(settings.tradeName || 'Manutenções Industriais e Assistência Técnica Especializada', textLeft, currentY + 17);
-  doc.text(`CNPJ: ${settings.cnpj}  |  Tel: ${settings.phone}  |  ${settings.email}`, textLeft, currentY + 22);
-
-  // Report Badge Right
   doc.setFillColor(2, 132, 199); // Sky blue accent
-  doc.roundedRect(pageWidth - margin - 44, currentY + 5, 40, 22, 1.5, 1.5, 'F');
+  doc.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 1.5, 1.5, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
-  doc.text('RELATÓRIO TÉCNICO', pageWidth - margin - 24, currentY + 11, { align: 'center' });
-  doc.setFontSize(13);
-  doc.text(report.code || '#0000', pageWidth - margin - 24, currentY + 18, { align: 'center' });
+  doc.text('RELATÓRIO TÉCNICO', badgeCenterX, badgeY + 6.5, { align: 'center' });
+
+  // Code without '#' (e.g. '4732' instead of '#4732')
+  const cleanCode = (report.code || '0000').replace(/^#/, '');
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text(cleanCode, badgeCenterX, badgeY + 14, { align: 'center' });
+
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Data: ${report.date || new Date().toLocaleDateString('pt-BR')}`, pageWidth - margin - 24, currentY + 24, { align: 'center' });
+  doc.text(`Data: ${report.date || new Date().toLocaleDateString('pt-BR')}`, badgeCenterX, badgeY + 20.5, { align: 'center' });
 
-  currentY += 36;
+  // Company Name & Info (Center-Left) - text width strictly constrained so it never goes under the badge
+  const textLeft = logoBase64 ? margin + 34 : margin + 6;
+  const maxCompanyTextWidth = badgeX - textLeft - 4; // Clear margin before the blue badge
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(15);
+  doc.text(settings.companyName || 'KADU MANUTENÇÕES', textLeft, currentY + 10.5);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(203, 213, 225); // slate-300
+  const tradeLines = doc.splitTextToSize(settings.tradeName || 'Kadu Manutenções Industriais & Equipamentos', maxCompanyTextWidth);
+  doc.text(tradeLines[0] || '', textLeft, currentY + 16.5);
+
+  doc.setFontSize(7.5);
+  doc.setTextColor(226, 232, 240); // slate-200
+  // Cleanly separate CNPJ/Phone from Email so they never touch or go under the badge
+  doc.text(`CNPJ: ${settings.cnpj}   |   Tel: ${settings.phone}`, textLeft, currentY + 22.5);
+  doc.text(`${settings.email}`, textLeft, currentY + 28);
+
+  currentY += headerHeight + 4;
 
   // --- 2. DADOS PRINCIPAIS: CLIENTE & MÁQUINA (2 COLUNAS) ---
   const boxWidth = (contentWidth - 4) / 2;

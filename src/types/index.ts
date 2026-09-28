@@ -114,6 +114,7 @@ export interface CompanySettings {
   supabaseAnonKey?: string;
   defaultWhatsappMessage: string;
   defaultEmailMessage: string;
+  adminPin?: string;
 }
 
 export interface AppStateData {

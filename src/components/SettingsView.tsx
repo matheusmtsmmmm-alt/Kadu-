@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, 
   Users, 
@@ -16,11 +16,14 @@ import {
   Shield,
   Layers,
   Sparkles,
-  Wrench
+  Wrench,
+  Eye,
+  Download
 } from 'lucide-react';
-import { CompanySettings, Technician, Client, Machine } from '../types';
+import { CompanySettings, Technician, Client, Machine, MaintenanceReport } from '../types';
 import { uploadPhotoFile } from '../services/api';
 import { OFFICIAL_INJECTION_CHECKLIST } from '../data/defaultChecklist';
+import { downloadReportPdf } from '../services/pdfGenerator';
 import { MachinesView } from './MachinesView';
 
 interface SettingsViewProps {
@@ -30,8 +33,10 @@ interface SettingsViewProps {
   checklistTemplate: Array<{ id: string; label: string }>;
   clients: Client[];
   machines: Machine[];
-  initialTab?: 'empresa' | 'equipe' | 'maquinas' | 'clientes' | 'checklist' | 'online';
+  reports?: MaintenanceReport[];
+  initialTab?: 'empresa' | 'maquinas' | 'relatorios' | 'equipe' | 'clientes' | 'checklist' | 'online';
   onBack: () => void;
+  onViewPdf?: (report: MaintenanceReport) => void;
   onSaveAllSettings: (updates: {
     companySettings?: Partial<CompanySettings>;
     technicians?: Technician[];
@@ -51,23 +56,42 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   checklistTemplate,
   clients,
   machines,
+  reports = [],
   initialTab = 'empresa',
   onBack,
+  onViewPdf,
   onSaveAllSettings,
   onSaveClient,
   onDeleteClient,
   onSaveMachine,
   onDeleteMachine
 }) => {
-  const [activeTab, setActiveTab] = useState<'empresa' | 'equipe' | 'maquinas' | 'clientes' | 'checklist' | 'online'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'empresa' | 'maquinas' | 'relatorios' | 'equipe' | 'clientes' | 'checklist' | 'online'>(initialTab);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Form states
-  const [companyForm, setCompanyForm] = useState<CompanySettings>({ ...settings });
+  const [companyForm, setCompanyForm] = useState<CompanySettings>({ ...settings, adminPin: settings.adminPin || '1111' });
   const [techList, setTechList] = useState<Technician[]>([...technicians]);
   const [auxList, setAuxList] = useState<string[]>([...assistants]);
   const [checkList, setCheckList] = useState<Array<{ id: string; label: string }>>([...checklistTemplate]);
+
+  // Synchronize internal state whenever props update
+  useEffect(() => {
+    setCompanyForm({ ...settings, adminPin: settings.adminPin || '1111' });
+  }, [settings]);
+
+  useEffect(() => {
+    setTechList([...technicians]);
+  }, [technicians]);
+
+  useEffect(() => {
+    setAuxList([...assistants]);
+  }, [assistants]);
+
+  useEffect(() => {
+    setCheckList([...checklistTemplate]);
+  }, [checklistTemplate]);
   
   // New input states
   const [newAuxName, setNewAuxName] = useState('');
@@ -202,6 +226,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </button>
 
           <button
+            onClick={() => setActiveTab('relatorios')}
+            className={`px-3 py-2 text-xs font-bold rounded-xl whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+              activeTab === 'relatorios'
+                ? 'bg-blue-900 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <span>📑 Últimos Relatórios ({reports?.length || 0})</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('equipe')}
             className={`px-3 py-2 text-xs font-bold rounded-xl whitespace-nowrap transition-colors ${
               activeTab === 'equipe'
@@ -328,12 +363,42 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               />
             </div>
 
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 uppercase">
+                    Senha de Acesso às Configurações (PIN)
+                  </label>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Senha de 4 dígitos para proteger o acesso (padrão: 1111).
+                  </p>
+                </div>
+                <div className="w-24">
+                  <input
+                    type="text"
+                    maxLength={4}
+                    pattern="[0-9]*"
+                    value={companyForm.adminPin || '1111'}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                      setCompanyForm(prev => ({ ...prev, adminPin: val }));
+                    }}
+                    className="w-full h-10 text-center font-mono font-bold text-base tracking-widest bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-blue-600 shadow-xs"
+                  />
+                </div>
+              </div>
+              <p className="text-[10px] text-emerald-700 font-medium flex items-center gap-1">
+                <Check className="w-3 h-3 text-emerald-600" />
+                Salvamento permanente: todas as alterações ficam gravadas permanentemente.
+              </p>
+            </div>
+
             <div className="pt-2">
               <button
                 type="button"
                 onClick={handleSaveCompany}
                 disabled={isSaving}
-                className="w-full h-13 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm"
+                className="w-full h-13 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm cursor-pointer"
               >
                 <Save className="w-4 h-4" />
                 <span>{isSaving ? 'Salvando...' : 'Salvar Dados da Empresa'}</span>
@@ -356,7 +421,96 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         )}
 
         {/* ============================================================== */}
-        {/* TAB 3: EQUIPE TÉCNICA */}
+        {/* TAB 3: ÚLTIMOS RELATÓRIOS CONCLUÍDOS */}
+        {/* ============================================================== */}
+        {activeTab === 'relatorios' && (
+          <div className="space-y-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900">Últimos Relatórios Concluídos</h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    {reports.length} {reports.length === 1 ? 'relatório registrado' : 'relatórios registrados'} no sistema
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {reports.length === 0 ? (
+              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-xs">
+                <FileText className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+                <p className="text-sm font-bold text-slate-700">Nenhum relatório emitido ainda</p>
+                <p className="text-xs text-slate-400 mt-1">Crie um novo relatório na tela inicial para visualizá-lo e gerenciá-lo aqui.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {reports.map((r) => (
+                  <div
+                    key={r.id}
+                    className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-3 hover:border-slate-300 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center font-bold text-xs shrink-0">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono font-extrabold text-blue-900 bg-blue-50 px-2 py-0.5 rounded-md">
+                              {r.code}
+                            </span>
+                            <span className="text-xs font-bold text-slate-800">
+                              {r.machine.name} {r.machine.tag ? `(${r.machine.tag})` : ''}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {r.date} • {r.technician.name} • {r.client.name}
+                          </p>
+                        </div>
+                      </div>
+
+                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                        r.status === 'Finalizado'
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          : 'bg-amber-50 text-amber-700 border border-amber-200'
+                      }`}>
+                        {r.status}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100">
+                      {onViewPdf && (
+                        <button
+                          type="button"
+                          onClick={() => onViewPdf(r)}
+                          className="flex-1 min-w-[120px] h-9 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Ver PDF</span>
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => downloadReportPdf(r, settings)}
+                        className="flex-1 min-w-[120px] h-9 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-xs cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Baixar PDF</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 4: EQUIPE TÉCNICA */}
         {/* ============================================================== */}
         {activeTab === 'equipe' && (
           <div className="space-y-4">

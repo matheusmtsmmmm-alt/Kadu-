@@ -512,7 +512,8 @@ const initialData = {
     supabaseUrl: "",
     supabaseAnonKey: "",
     defaultWhatsappMessage: "Olá! Segue o relatório de manutenção da máquina [MÁQUINA], realizado em [DATA] pela Kadu Manutenções.",
-    defaultEmailMessage: "Olá,\n\nSegue em anexo o relatório de manutenção referente à máquina [MÁQUINA].\n\nAtenciosamente,\nKadu Manutenções"
+    defaultEmailMessage: "Olá,\n\nSegue em anexo o relatório de manutenção referente à máquina [MÁQUINA].\n\nAtenciosamente,\nKadu Manutenções",
+    adminPin: "1111"
   }
 };
 
@@ -524,7 +525,11 @@ function readDb() {
       return initialData;
     }
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (parsed.companySettings && !parsed.companySettings.adminPin) {
+      parsed.companySettings.adminPin = "1111";
+    }
+    return parsed;
   } catch (err) {
     console.error('Error reading db.json, returning initialData:', err);
     return initialData;

@@ -5,9 +5,10 @@ import { Machine, Client } from '../types';
 interface MachinesViewProps {
   machines: Machine[];
   clients: Client[];
-  onBack: () => void;
+  onBack?: () => void;
   onSaveMachine: (machine: Partial<Machine>) => Promise<void>;
   onDeleteMachine: (id: string) => Promise<void>;
+  embedded?: boolean;
 }
 
 export const MachinesView: React.FC<MachinesViewProps> = ({
@@ -15,7 +16,8 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
   clients,
   onBack,
   onSaveMachine,
-  onDeleteMachine
+  onDeleteMachine,
+  embedded = false
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPavilhao, setSelectedPavilhao] = useState<'TODOS' | 'P1' | 'P2'>('TODOS');
@@ -114,19 +116,48 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col pb-20">
-      {/* Top Header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-20 shadow-xs">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+    <div className={embedded ? "space-y-4" : "min-h-screen bg-slate-100 flex flex-col pb-20"}>
+      {/* Top Header (only if not embedded) */}
+      {!embedded && (
+        <div className="bg-white border-b border-slate-200 px-4 py-3 sticky top-0 z-20 shadow-xs">
+          <div className="max-w-2xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {onBack && (
+                <button
+                  onClick={onBack}
+                  className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5 text-slate-700" />
+                </button>
+              )}
+              <div>
+                <h2 className="text-lg font-extrabold text-slate-900">Máquinas e Injetoras</h2>
+                <p className="text-xs text-slate-500 font-medium">
+                  {machines.length} cadastradas • P1: {p1Count} | P2: {p2Count}
+                </p>
+              </div>
+            </div>
+
             <button
-              onClick={onBack}
-              className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+              onClick={handleOpenAdd}
+              className="h-10 px-3.5 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-all"
             >
-              <ArrowLeft className="w-5 h-5 text-slate-700" />
+              <Plus className="w-4 h-4" />
+              <span>Nova Máquina</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Embedded Top Header Banner */}
+      {embedded && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center">
+              <Wrench className="w-5 h-5" />
+            </div>
             <div>
-              <h2 className="text-lg font-extrabold text-slate-900">Máquinas e Injetoras</h2>
+              <h3 className="text-base font-extrabold text-slate-900">Parque de Máquinas & Injetoras</h3>
               <p className="text-xs text-slate-500 font-medium">
                 {machines.length} cadastradas • P1: {p1Count} | P2: {p2Count}
               </p>
@@ -135,15 +166,15 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
 
           <button
             onClick={handleOpenAdd}
-            className="h-10 px-3.5 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-all"
+            className="h-10 px-4 bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-all shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Nova Máquina</span>
           </button>
         </div>
-      </div>
+      )}
 
-      <div className="max-w-2xl w-full mx-auto p-4 sm:p-6 space-y-4">
+      <div className={embedded ? "space-y-4" : "max-w-2xl w-full mx-auto p-4 sm:p-6 space-y-4"}>
         {/* Pavilion Tabs */}
         <div className="grid grid-cols-3 gap-2 bg-slate-200/70 p-1.5 rounded-2xl">
           <button

@@ -15,11 +15,13 @@ import {
   Settings as SettingsIcon,
   Shield,
   Layers,
-  Sparkles
+  Sparkles,
+  Wrench
 } from 'lucide-react';
 import { CompanySettings, Technician, Client, Machine } from '../types';
 import { uploadPhotoFile } from '../services/api';
 import { OFFICIAL_INJECTION_CHECKLIST } from '../data/defaultChecklist';
+import { MachinesView } from './MachinesView';
 
 interface SettingsViewProps {
   settings: CompanySettings;
@@ -28,6 +30,7 @@ interface SettingsViewProps {
   checklistTemplate: Array<{ id: string; label: string }>;
   clients: Client[];
   machines: Machine[];
+  initialTab?: 'empresa' | 'equipe' | 'maquinas' | 'clientes' | 'checklist' | 'online';
   onBack: () => void;
   onSaveAllSettings: (updates: {
     companySettings?: Partial<CompanySettings>;
@@ -37,6 +40,8 @@ interface SettingsViewProps {
   }) => Promise<void>;
   onSaveClient: (client: Partial<Client>) => Promise<void>;
   onDeleteClient: (id: string) => Promise<void>;
+  onSaveMachine: (machine: Partial<Machine>) => Promise<void>;
+  onDeleteMachine: (id: string) => Promise<void>;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -46,12 +51,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   checklistTemplate,
   clients,
   machines,
+  initialTab = 'empresa',
   onBack,
   onSaveAllSettings,
   onSaveClient,
-  onDeleteClient
+  onDeleteClient,
+  onSaveMachine,
+  onDeleteMachine
 }) => {
-  const [activeTab, setActiveTab] = useState<'empresa' | 'equipe' | 'clientes' | 'checklist' | 'online' | 'pdf'>('empresa');
+  const [activeTab, setActiveTab] = useState<'empresa' | 'equipe' | 'maquinas' | 'clientes' | 'checklist' | 'online'>(initialTab);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -180,6 +188,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             }`}
           >
             🏢 Dados Empresa & Logo
+          </button>
+
+          <button
+            onClick={() => setActiveTab('maquinas')}
+            className={`px-3 py-2 text-xs font-bold rounded-xl whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+              activeTab === 'maquinas'
+                ? 'bg-blue-900 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <span>🔧 Máquinas ({machines.length})</span>
           </button>
 
           <button
@@ -324,7 +343,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         )}
 
         {/* ============================================================== */}
-        {/* TAB 2: EQUIPE TÉCNICA */}
+        {/* TAB 2: MÁQUINAS (INJETORAS PAVILHÃO 1, PAVILHÃO 2 E GERAL) */}
+        {/* ============================================================== */}
+        {activeTab === 'maquinas' && (
+          <MachinesView
+            machines={machines}
+            clients={clients}
+            onSaveMachine={onSaveMachine}
+            onDeleteMachine={onDeleteMachine}
+            embedded={true}
+          />
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 3: EQUIPE TÉCNICA */}
         {/* ============================================================== */}
         {activeTab === 'equipe' && (
           <div className="space-y-4">

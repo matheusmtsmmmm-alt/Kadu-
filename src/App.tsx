@@ -48,6 +48,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeView, setActiveView] = useState<ActiveView>('home');
+  const [settingsInitialTab, setSettingsInitialTab] = useState<'empresa' | 'equipe' | 'maquinas' | 'clientes' | 'checklist' | 'online'>('empresa');
 
   // Modals
   const [justFinishedReport, setJustFinishedReport] = useState<MaintenanceReport | null>(null);
@@ -222,7 +223,14 @@ export default function App() {
                 </span>
               </div>
 
-              <div className="bg-white border border-slate-200/80 rounded-2xl p-3.5 text-center shadow-xs">
+              <div 
+                onClick={() => {
+                  setSettingsInitialTab('maquinas');
+                  setActiveView('settings');
+                }}
+                className="bg-white border border-slate-200/80 rounded-2xl p-3.5 text-center shadow-xs cursor-pointer hover:border-blue-400 active:scale-95 transition-all"
+                title="Abrir gestão de máquinas nas Configurações"
+              >
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight block">
                   Máquinas
                 </span>
@@ -232,11 +240,10 @@ export default function App() {
               </div>
             </section>
 
-            {/* Big Action Buttons as explicitly requested in prompt:
+            {/* Action Buttons:
                 [ + NOVO RELATÓRIO ]
                 [ HISTÓRICO ]
-                [ MÁQUINAS ]
-                [ ⚙ CONFIGURAÇÕES ]
+                [ ⚙ CONFIGURAÇÕES ] (Com Máquinas, Equipe, Clientes, Checklist e Empresa)
             */}
             <nav aria-label="Ações principais" className="flex flex-col gap-3">
               {/* 1. NOVO RELATÓRIO (HERO CTA) */}
@@ -281,32 +288,13 @@ export default function App() {
                 </span>
               </button>
 
-              {/* 3. MÁQUINAS */}
+              {/* 3. CONFIGURAÇÕES (Inclui Máquinas, Equipe, Clientes, Checklist e Empresa) */}
               <button
                 type="button"
-                onClick={() => setActiveView('machines')}
-                className="w-full h-16 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-900 font-black text-base sm:text-lg rounded-2xl flex items-center justify-between px-6 border border-slate-200/90 shadow-xs transition-all"
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-                    <Wrench className="w-5 h-5" />
-                  </div>
-                  <div className="text-left">
-                    <span className="block leading-tight">MÁQUINAS</span>
-                    <span className="text-xs text-slate-500 font-medium">
-                      Equipamentos cadastrados e TAGs
-                    </span>
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full tabular-nums">
-                  {totalMachines}
-                </span>
-              </button>
-
-              {/* 4. CONFIGURAÇÕES */}
-              <button
-                type="button"
-                onClick={() => setActiveView('settings')}
+                onClick={() => {
+                  setSettingsInitialTab('empresa');
+                  setActiveView('settings');
+                }}
                 className="w-full h-16 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-900 font-black text-base sm:text-lg rounded-2xl flex items-center justify-between px-6 border border-slate-200/90 shadow-xs transition-all"
               >
                 <div className="flex items-center gap-3.5">
@@ -316,7 +304,7 @@ export default function App() {
                   <div className="text-left">
                     <span className="block leading-tight">CONFIGURAÇÕES</span>
                     <span className="text-xs text-slate-500 font-medium">
-                      Equipe, checklist, logo e dados
+                      Máquinas, equipe, checklist, logo e dados
                     </span>
                   </div>
                 </div>
@@ -415,22 +403,9 @@ export default function App() {
       )}
 
       {/* ============================================================== */}
-      {/* 4. MÁQUINAS VIEW */}
+      {/* 4. CONFIGURAÇÕES VIEW (Com Máquinas Integrada) */}
       {/* ============================================================== */}
-      {activeView === 'machines' && data && (
-        <MachinesView
-          machines={data.machines}
-          clients={data.clients}
-          onBack={() => setActiveView('home')}
-          onSaveMachine={handleSaveMachine}
-          onDeleteMachine={handleDeleteMachine}
-        />
-      )}
-
-      {/* ============================================================== */}
-      {/* 5. CONFIGURAÇÕES VIEW */}
-      {/* ============================================================== */}
-      {activeView === 'settings' && data && (
+      {(activeView === 'settings' || activeView === 'machines') && data && (
         <SettingsView
           settings={company}
           technicians={data.technicians}
@@ -438,10 +413,13 @@ export default function App() {
           checklistTemplate={data.checklistTemplate}
           clients={data.clients}
           machines={data.machines}
+          initialTab={activeView === 'machines' ? 'maquinas' : settingsInitialTab}
           onBack={() => setActiveView('home')}
           onSaveAllSettings={handleSaveAllSettings}
           onSaveClient={handleSaveClient}
           onDeleteClient={handleDeleteClient}
+          onSaveMachine={handleSaveMachine}
+          onDeleteMachine={handleDeleteMachine}
         />
       )}
 

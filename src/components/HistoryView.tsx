@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { MaintenanceReport, CompanySettings } from '../types';
 import { downloadReportPdf, shareReportPdf } from '../services/pdfGenerator';
+import { MachineBadge } from './MachineBadge';
 
 interface HistoryViewProps {
   reports: MaintenanceReport[];
@@ -215,39 +216,43 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                 key={report.id}
                 className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-blue-400 transition-all flex flex-col justify-between gap-3"
               >
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-black tracking-wider text-blue-900 font-mono">
-                      RELATÓRIO {report.code}
-                    </span>
-                    <span
-                      className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                        report.status === 'Finalizado'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-amber-100 text-amber-800'
-                      }`}
-                    >
-                      {report.status}
-                    </span>
-                  </div>
+                <div className="flex items-start gap-3.5">
+                  <MachineBadge machine={report.machine} size="md" />
 
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
-                    {report.machine.name} {report.machine.tag ? `(${report.machine.tag})` : ''}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium">
-                    Cliente: {report.client.name}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-black tracking-wider text-blue-900 font-mono">
+                        RELATÓRIO {report.code}
+                      </span>
+                      <span
+                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                          report.status === 'Finalizado'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}
+                      >
+                        {report.status}
+                      </span>
+                    </div>
 
-                  <div className="flex flex-wrap items-center gap-y-1 gap-x-3 text-xs text-slate-500 mt-2">
-                    <span className="flex items-center gap-1 font-medium">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                      {report.date}
-                    </span>
-                    <span aria-hidden="true">·</span>
-                    <span className="flex items-center gap-1 font-medium">
-                      <User className="w-3.5 h-3.5 text-slate-400" />
-                      Técnico: {report.technician.name}
-                    </span>
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug truncate">
+                      {report.machine.name} {report.machine.tag ? `(${report.machine.tag})` : ''}
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium truncate">
+                      Cliente: {report.client.name}
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-y-1 gap-x-3 text-xs text-slate-500 mt-2">
+                      <span className="flex items-center gap-1 font-medium">
+                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                        {report.date}
+                      </span>
+                      <span aria-hidden="true">·</span>
+                      <span className="flex items-center gap-1 font-medium">
+                        <User className="w-3.5 h-3.5 text-slate-400" />
+                        Técnico: {report.technician.name}
+                      </span>
+                    </div>
                   </div>
                 </div>
 

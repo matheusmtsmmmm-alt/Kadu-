@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Wrench, Plus, Search, ArrowLeft, Trash2, Edit2, X, Check, Building2, MapPin, Gauge } from 'lucide-react';
 import { Machine, Client } from '../types';
+import { MachineBadge } from './MachineBadge';
 
 interface MachinesViewProps {
   machines: Machine[];
@@ -260,30 +261,40 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
                 key={mach.id}
                 className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs hover:border-blue-300 transition-all"
               >
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {mach.tag && (
-                      <span className="text-xs font-mono font-black text-blue-900 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
-                        {mach.tag}
-                      </span>
-                    )}
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                    {/* Highlighted Machine Icon with Number or Letter */}
+                    <MachineBadge machine={mach} size="md" />
 
-                    {mach.tonnage && (
-                      <span className="text-xs font-black text-amber-950 bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300 flex items-center gap-1 shadow-2xs">
-                        <Gauge className="w-3.5 h-3.5 text-amber-700" />
-                        <span>{mach.tonnage}</span>
-                      </span>
-                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
+                        {mach.tag && (
+                          <span className="text-[11px] font-mono font-black text-blue-900 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                            {mach.tag}
+                          </span>
+                        )}
 
-                    {mach.pavilhao && (
-                      <span className="text-xs font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
-                        {mach.pavilhao}
-                      </span>
-                    )}
+                        {mach.tonnage && (
+                          <span className="text-[11px] font-black text-amber-950 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300 flex items-center gap-1">
+                            <Gauge className="w-3 h-3 text-amber-700" />
+                            <span>{mach.tonnage}</span>
+                          </span>
+                        )}
 
-                    <h3 className="text-base sm:text-lg font-black text-slate-900 block w-full mt-1">
-                      {mach.name}
-                    </h3>
+                        {mach.pavilhao && (
+                          <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                            {mach.pavilhao === 'P1' ? 'Pavilhão 1' : mach.pavilhao === 'P2' ? 'Pavilhão 2' : mach.pavilhao}
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="text-base sm:text-lg font-black text-slate-900 truncate">
+                        {mach.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 font-semibold truncate">
+                        {mach.model || 'Injetora'} {mach.manufacturer ? `• ${mach.manufacturer}` : ''}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-1 shrink-0">

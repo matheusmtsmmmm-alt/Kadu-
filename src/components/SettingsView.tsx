@@ -25,6 +25,7 @@ import { uploadPhotoFile } from '../services/api';
 import { OFFICIAL_INJECTION_CHECKLIST } from '../data/defaultChecklist';
 import { downloadReportPdf } from '../services/pdfGenerator';
 import { MachinesView } from './MachinesView';
+import { MachineBadge } from './MachineBadge';
 
 interface SettingsViewProps {
   settings: CompanySettings;
@@ -453,20 +454,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-3 hover:border-slate-300 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center font-bold text-xs shrink-0">
-                          <FileText className="w-5 h-5" />
-                        </div>
+                      <div className="flex items-center gap-3">
+                        <MachineBadge machine={r.machine} size="sm" />
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-mono font-extrabold text-blue-900 bg-blue-50 px-2 py-0.5 rounded-md">
                               {r.code}
                             </span>
-                            <span className="text-xs font-bold text-slate-800">
+                            <span className="text-xs font-black text-slate-800">
                               {r.machine.name} {r.machine.tag ? `(${r.machine.tag})` : ''}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5">
+                          <p className="text-xs text-slate-500 mt-0.5 font-medium">
                             {r.date} • {r.technician.name} • {r.client.name}
                           </p>
                         </div>

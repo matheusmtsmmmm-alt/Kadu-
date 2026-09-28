@@ -30,6 +30,7 @@ import {
 import { StepProgressBar } from './StepProgressBar';
 import { PhotoUploader } from './PhotoUploader';
 import { SignaturePad } from './SignaturePad';
+import { MachineBadge } from './MachineBadge';
 import { OFFICIAL_INJECTION_CHECKLIST } from '../data/defaultChecklist';
 
 interface NewReportWizardProps {
@@ -332,7 +333,7 @@ export const NewReportWizard: React.FC<NewReportWizardProps> = ({
                 </div>
 
                 {/* Machines grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-56 overflow-y-auto pr-1">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-60 overflow-y-auto pr-1">
                   {existingMachines
                     .filter(m => {
                       if (quickPavilhao === 'P1') {
@@ -344,37 +345,40 @@ export const NewReportWizard: React.FC<NewReportWizardProps> = ({
                       return true;
                     })
                     .map(m => {
-                      const isSelected = reportData.machine.name === m.name || (reportData.machine.tag && reportData.machine.tag === m.tag);
+                      const isSelected = Boolean(reportData.machine.name === m.name || (reportData.machine.tag && reportData.machine.tag === m.tag));
                       return (
                         <button
                           key={m.id}
                           type="button"
                           onClick={() => handleSelectMachine(m)}
-                          className={`p-2.5 text-left rounded-xl border transition-all flex flex-col justify-between ${
+                          className={`p-2.5 text-left rounded-2xl border transition-all flex items-center gap-2.5 cursor-pointer ${
                             isSelected
-                              ? 'bg-blue-900 text-white border-blue-900 shadow-md ring-2 ring-blue-500/50'
-                              : 'bg-slate-50 text-slate-800 border-slate-200 hover:bg-blue-50/60 hover:border-blue-200'
+                              ? 'bg-blue-900 text-white border-blue-900 shadow-md ring-2 ring-blue-500'
+                              : 'bg-white text-slate-800 border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 shadow-2xs'
                           }`}
                         >
-                          <div className="flex items-center justify-between gap-1 w-full mb-1">
-                            <span className={`text-[11px] font-mono font-black px-1.5 py-0.5 rounded ${
-                              isSelected ? 'bg-blue-800 text-white' : 'bg-blue-100 text-blue-900'
-                            }`}>
-                              {m.tag || m.name.split('-')[0].trim()}
-                            </span>
+                          {/* Prominent Number or Letter Badge */}
+                          <MachineBadge machine={m} size="sm" selected={isSelected} />
+
+                          <div className="flex-1 min-w-0">
                             {m.tonnage && (
-                              <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                              <span className={`text-[10px] font-black px-1.5 py-0.2 rounded inline-block mb-0.5 ${
                                 isSelected ? 'bg-amber-400 text-slate-950 font-black' : 'bg-amber-100 text-amber-950 border border-amber-300'
                               }`}>
                                 {m.tonnage}
                               </span>
                             )}
+                            <span className={`text-xs font-black block truncate ${
+                              isSelected ? 'text-white' : 'text-slate-900'
+                            }`}>
+                              {m.tag || m.name.split('-')[0].trim()}
+                            </span>
+                            <span className={`text-[11px] font-medium block truncate ${
+                              isSelected ? 'text-blue-200' : 'text-slate-500'
+                            }`}>
+                              {m.model || m.name}
+                            </span>
                           </div>
-                          <span className={`text-xs font-bold leading-tight line-clamp-1 ${
-                            isSelected ? 'text-blue-100' : 'text-slate-700'
-                          }`}>
-                            {m.model || m.name}
-                          </span>
                         </button>
                       );
                     })}
@@ -395,6 +399,24 @@ export const NewReportWizard: React.FC<NewReportWizardProps> = ({
                   </span>
                 )}
               </div>
+
+              {/* Prominent Highlighted Machine Badge & Info */}
+              {reportData.machine.name && (
+                <div className="flex items-center gap-3.5 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <MachineBadge machine={reportData.machine} size="md" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] font-black text-blue-900 uppercase tracking-widest block">
+                      Máquina Selecionada
+                    </span>
+                    <h4 className="text-base font-black text-slate-900 truncate">
+                      {reportData.machine.name}
+                    </h4>
+                    <p className="text-xs text-slate-500 font-semibold truncate">
+                      {reportData.machine.model || 'Modelo não informado'} {reportData.machine.tag ? `• TAG: ${reportData.machine.tag}` : ''}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">

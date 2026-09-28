@@ -3,7 +3,6 @@ import {
   CheckCircle2, 
   FileText, 
   Download, 
-  Share2, 
   Send, 
   Mail, 
   Home, 
@@ -18,7 +17,7 @@ interface ReportSuccessModalProps {
   report: MaintenanceReport;
   settings: CompanySettings;
   onClose: () => void;
-  onViewPdf: () => void;
+  onViewPdf?: () => void;
 }
 
 export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
@@ -30,7 +29,6 @@ export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
   const [showWhatsappModal, setShowWhatsappModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
 
   // WhatsApp formatted message template
   const defaultWaMsg = `Olá! Segue o relatório de manutenção da máquina *${report.machine.tag ? `[${report.machine.tag}] ` : ''}${report.machine.name}*, realizado em *${report.date}* pela Kadu Manutenções.\n\nCódigo do Relatório: *${report.code}*\nTécnico: *${report.technician.name}*\nStatus: *${report.equipmentStatus}*\n\nAtenciosamente,\n*Kadu Manutenções*`;
@@ -52,17 +50,6 @@ export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
       console.error('Download error:', err);
     } finally {
       setIsDownloading(false);
-    }
-  };
-
-  const handleNativeShare = async () => {
-    setIsSharing(true);
-    try {
-      await shareReportPdf(report, settings);
-    } catch (err) {
-      console.error('Share error:', err);
-    } finally {
-      setIsSharing(false);
     }
   };
 
@@ -108,55 +95,34 @@ export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
           </p>
         </div>
 
-        {/* Action Buttons as requested */}
+        {/* Action Buttons */}
         <div className="space-y-3">
-          {/* 1. Visualizar PDF */}
-          <button
-            type="button"
-            onClick={onViewPdf}
-            className="w-full h-14 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-base rounded-2xl flex items-center justify-center gap-3 shadow-md shadow-blue-950/20 active:scale-[0.98] transition-all"
-          >
-            <FileText className="w-5 h-5 text-blue-200" />
-            <span>VISUALIZAR PDF</span>
-          </button>
-
-          {/* 2. Baixar PDF */}
+          {/* 1. Baixar PDF */}
           <button
             type="button"
             onClick={handleDownload}
             disabled={isDownloading}
-            className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-base rounded-2xl flex items-center justify-center gap-3 shadow-md active:scale-[0.98] transition-all"
+            className="w-full h-14 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-base rounded-2xl flex items-center justify-center gap-3 shadow-md shadow-blue-950/20 active:scale-[0.98] transition-all cursor-pointer"
           >
-            <Download className="w-5 h-5 text-slate-300" />
+            <Download className="w-5 h-5 text-blue-200" />
             <span>{isDownloading ? 'Gerando Arquivo...' : 'BAIXAR PDF'}</span>
           </button>
 
-          {/* 3. Compartilhar Geral (Menu Nativo) */}
-          <button
-            type="button"
-            onClick={handleNativeShare}
-            disabled={isSharing}
-            className="w-full h-14 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-base rounded-2xl border border-slate-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all"
-          >
-            <Share2 className="w-5 h-5 text-slate-600" />
-            <span>COMPARTILHAR</span>
-          </button>
-
-          {/* 4. Enviar pelo WhatsApp */}
+          {/* 2. Enviar pelo WhatsApp */}
           <button
             type="button"
             onClick={() => setShowWhatsappModal(true)}
-            className="w-full h-14 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-base rounded-2xl flex items-center justify-center gap-3 shadow-md shadow-emerald-950/20 active:scale-[0.98] transition-all"
+            className="w-full h-14 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-base rounded-2xl flex items-center justify-center gap-3 shadow-md shadow-emerald-950/20 active:scale-[0.98] transition-all cursor-pointer"
           >
             <Send className="w-5 h-5 text-emerald-200" />
             <span>ENVIAR PELO WHATSAPP</span>
           </button>
 
-          {/* 5. Enviar por E-mail */}
+          {/* 3. Enviar por E-mail */}
           <button
             type="button"
             onClick={() => setShowEmailModal(true)}
-            className="w-full h-14 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-base rounded-2xl border border-slate-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all"
+            className="w-full h-14 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-base rounded-2xl border border-slate-300 flex items-center justify-center gap-3 active:scale-[0.98] transition-all cursor-pointer"
           >
             <Mail className="w-5 h-5 text-slate-600" />
             <span>ENVIAR POR E-MAIL</span>

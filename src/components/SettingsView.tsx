@@ -19,7 +19,6 @@ import {
   Wrench,
   Eye,
   Download,
-  Star,
   Copy,
   CheckCircle2,
   RefreshCw
@@ -230,10 +229,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <ArrowLeft className="w-5 h-5 text-slate-700" />
             </button>
             <div>
-              <div className="flex items-center gap-1.5">
-                <h2 className="text-lg font-extrabold text-slate-900">Configurações do Sistema</h2>
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 shrink-0" />
-              </div>
+              <h2 className="text-lg font-extrabold text-slate-900">Configurações do Sistema</h2>
               <p className="text-xs text-slate-500 font-medium">Gestão administrativa e sincronização</p>
             </div>
           </div>

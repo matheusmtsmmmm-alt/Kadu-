@@ -17,8 +17,7 @@ import {
   Lock,
   KeyRound,
   X,
-  Delete,
-  Star
+  Delete
 } from 'lucide-react';
 import { 
   AppStateData, 
@@ -232,27 +231,16 @@ export default function App() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {company.logoUrl && (
-                    <div className="relative">
-                      <img
-                        src={company.logoUrl}
-                        alt="Logo"
-                        className="w-11 h-11 rounded-xl object-contain bg-white/10 p-1 border border-white/20"
-                      />
-                      <span 
-                        className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-xs" 
-                        title="Kadu Manutenções"
-                      >
-                        <Star className="w-2.5 h-2.5 fill-slate-950 text-slate-950" />
-                      </span>
-                    </div>
+                    <img
+                      src={company.logoUrl}
+                      alt="Logo"
+                      className="w-11 h-11 rounded-xl object-contain bg-white/10 p-1 border border-white/20"
+                    />
                   )}
                   <div>
-                    <div className="flex items-center gap-1.5">
-                      <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-none text-white">
-                        KADU MANUTENÇÕES
-                      </h1>
-                      <Star className="w-4 h-4 fill-amber-400 text-amber-400 shrink-0 drop-shadow-xs" />
-                    </div>
+                    <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-none text-white">
+                      KADU MANUTENÇÕES
+                    </h1>
                     <p className="text-[11px] text-slate-300 font-medium tracking-wide mt-1">
                       Sistema Técnico de Relatórios de Campo
                     </p>
@@ -388,10 +376,8 @@ export default function App() {
 
             {/* Footer info */}
             <footer className="mt-auto pt-6 text-center text-xs text-slate-400">
-              <p className="font-semibold text-slate-500 flex items-center justify-center gap-1.5">
-                <span>Kadu Manutenções</span>
-                <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
-                <span>Versão Online Sincronizada</span>
+              <p className="font-semibold text-slate-500">
+                Kadu Manutenções • Versão Online Sincronizada
               </p>
               <p className="text-[11px] text-slate-400 mt-0.5">
                 Pronto para Celular, Tablet e Computador

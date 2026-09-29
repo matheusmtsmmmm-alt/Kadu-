@@ -12,8 +12,7 @@ import {
   X,
   Send,
   Mail,
-  Trash2,
-  Star
+  Trash2
 } from 'lucide-react';
 import { MaintenanceReport, CompanySettings } from '../types';
 import { downloadReportPdf, shareReportPdf } from '../services/pdfGenerator';
@@ -136,10 +135,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
               <ArrowLeft className="w-5 h-5 text-slate-700" />
             </button>
             <div>
-              <div className="flex items-center gap-1.5">
-                <h2 className="text-lg font-extrabold text-slate-900">Histórico de Relatórios</h2>
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 shrink-0" />
-              </div>
+              <h2 className="text-lg font-extrabold text-slate-900">Histórico de Relatórios</h2>
               <p className="text-xs text-slate-500 font-medium">{filteredReports.length} relatórios cadastrados</p>
             </div>
           </div>

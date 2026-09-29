@@ -100,19 +100,6 @@ export async function generateReportPdf(report: MaintenanceReport, settings: Com
     }
   }
 
-  function drawMiniStar(cx: number, cy: number, r: number) {
-    doc.setFillColor(251, 191, 36); // Gold / amber #fbbf24
-    const pts: [number, number][] = [];
-    for (let i = 0; i < 10; i++) {
-      const angle = (i * Math.PI) / 5 - Math.PI / 2;
-      const radius = i % 2 === 0 ? r : r * 0.42;
-      pts.push([cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius]);
-    }
-    for (let i = 1; i < pts.length - 1; i++) {
-      doc.triangle(pts[0][0], pts[0][1], pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], 'F');
-    }
-  }
-
   function drawPageHeaderMini() {
     doc.setFillColor(primaryNavy[0], primaryNavy[1], primaryNavy[2]);
     doc.rect(margin, currentY, contentWidth, 8, 'F');
@@ -120,7 +107,6 @@ export async function generateReportPdf(report: MaintenanceReport, settings: Com
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.text('KADU MANUTENÇÕES', margin + 4, currentY + 5.5);
-    drawMiniStar(margin + 4 + doc.getTextWidth('KADU MANUTENÇÕES') + 2.2, currentY + 4.8, 1.2);
     doc.setFont('helvetica', 'normal');
     const cleanCodeMini = (report.code || '').replace(/^#/, '');
     doc.text(`Relatório ${cleanCodeMini} - ${report.machine.name}`, pageWidth - margin - 4, currentY + 5.5, { align: 'right' });
@@ -175,10 +161,6 @@ export async function generateReportPdf(report: MaintenanceReport, settings: Com
   doc.setFontSize(15);
   const compName = settings.companyName || 'KADU MANUTENÇÕES';
   doc.text(compName, textLeft, currentY + 10.5);
-
-  // Small gold star in PDF layout
-  const nameWidth = doc.getTextWidth(compName);
-  drawMiniStar(textLeft + nameWidth + 3.2, currentY + 9.2, 1.8);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);

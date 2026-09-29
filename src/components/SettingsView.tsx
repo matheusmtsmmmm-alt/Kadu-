@@ -18,7 +18,8 @@ import {
   Sparkles,
   Wrench,
   Eye,
-  Download
+  Download,
+  Star
 } from 'lucide-react';
 import { CompanySettings, Technician, Client, Machine, MaintenanceReport } from '../types';
 import { uploadPhotoFile } from '../services/api';
@@ -188,7 +189,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <ArrowLeft className="w-5 h-5 text-slate-700" />
             </button>
             <div>
-              <h2 className="text-lg font-extrabold text-slate-900">Configurações do Sistema</h2>
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-lg font-extrabold text-slate-900">Configurações do Sistema</h2>
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 shrink-0" />
+              </div>
               <p className="text-xs text-slate-500 font-medium">Gestão administrativa e sincronização</p>
             </div>
           </div>

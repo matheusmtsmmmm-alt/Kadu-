@@ -21,13 +21,15 @@ import {
   Download,
   Copy,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  Smartphone
 } from 'lucide-react';
 import { CompanySettings, Technician, Client, Machine, MaintenanceReport } from '../types';
 import { uploadPhotoFile, exportDataToJson, importDataFromJson } from '../services/api';
 import { OFFICIAL_INJECTION_CHECKLIST } from '../data/defaultChecklist';
 import { downloadReportPdf } from '../services/pdfGenerator';
 import { DEFAULT_LOGO_BASE64 } from '../data/defaultLogo';
+import { PWAInstallButton } from './PWAInstallButton';
 import { MachinesView } from './MachinesView';
 import { MachineBadge } from './MachineBadge';
 
@@ -489,6 +491,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <Check className="w-3 h-3 text-emerald-600" />
                 Salvamento permanente: todas as alterações ficam gravadas permanentemente.
               </p>
+            </div>
+
+            {/* PWA Mobile Installation Card */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-900 flex items-center justify-center shrink-0">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-800 block">Ícone na Tela Inicial do Celular</span>
+                  <span className="text-[11px] text-slate-500 block">Instale o app no Android ou iPhone para acesso em 1 toque.</span>
+                </div>
+              </div>
+              <PWAInstallButton variant="header" />
             </div>
 
             <div className="pt-2">

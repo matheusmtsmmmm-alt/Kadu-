@@ -45,6 +45,8 @@ import { ReportSuccessModal } from './components/ReportSuccessModal';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { downloadReportPdf } from './services/pdfGenerator';
 import { DEFAULT_LOGO_BASE64 } from './data/defaultLogo';
+import { realtimeSync, RealtimeStatus } from './services/realtimeSync';
+import { SyncStatusBadge } from './components/SyncStatusBadge';
 
 type ActiveView = 'home' | 'new_report' | 'history' | 'machines' | 'settings';
 
@@ -120,37 +122,67 @@ export default function App() {
   const [justFinishedReport, setJustFinishedReport] = useState<MaintenanceReport | null>(null);
   const [viewingPdfReport, setViewingPdfReport] = useState<MaintenanceReport | null>(null);
 
-  // Initial load & periodic background sync (every 6 seconds for multi-device live sync)
-  const loadData = async (showLoadingSpinner = false) => {
-    if (showLoadingSpinner) setIsLoading(true);
+  // Real-time synchronization state
+  const [syncStatus, setSyncStatus] = useState<RealtimeStatus>(realtimeSync.getStatus());
+
+  // Initial load & real-time live synchronization setup
+  useEffect(() => {
+    // 1. Initial load from local cache and server
+    const initLoad = async () => {
+      setIsLoading(true);
+      try {
+        const appData = await fetchAppData();
+        setData(appData);
+      } catch (err) {
+        console.error('Initial load failed:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initLoad();
+
+    // 2. Real-time data subscriber: when Cell A modifies anything, Cell B updates instantly!
+    const unsubscribeData = realtimeSync.subscribeData((incomingData) => {
+      setData(incomingData);
+    });
+
+    // 3. Real-time status subscriber (calm, stable indicator)
+    const unsubscribeStatus = realtimeSync.subscribeStatus((newStatus) => {
+      setSyncStatus(newStatus);
+    });
+
+    // 4. Initialize real-time multi-device connection (WebSocket + SSE + fast version check)
+    const cleanupRealtime = realtimeSync.init();
+
+    return () => {
+      unsubscribeData();
+      unsubscribeStatus();
+      cleanupRealtime();
+    };
+  }, []);
+
+  const handleForceSync = async () => {
     setIsSyncing(true);
     try {
-      const appData = await fetchAppData();
-      setData(appData);
-    } catch (err) {
-      console.error('Data sync failed:', err);
+      const refreshed = await realtimeSync.forceSync();
+      if (refreshed) {
+        setData(refreshed);
+      }
     } finally {
-      setIsLoading(false);
       setIsSyncing(false);
     }
   };
 
-  useEffect(() => {
-    loadData(true);
-
-    // Live background polling for multi-user synchronization across phones & tablets
-    const interval = setInterval(() => {
-      loadData(false);
-    }, 6000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Handlers for New Report
+  // Handlers for New Report (Phone A -> Phone B instant sync)
   const handleFinishNewReport = async (newReport: MaintenanceReport) => {
     const res = await saveReport(newReport);
     if (res.success && res.report) {
-      await loadData(false);
+      if (data) {
+        const updatedReports = [res.report, ...data.reports.filter(r => r.id !== res.report.id)];
+        const updatedData = { ...data, reports: updatedReports };
+        setData(updatedData);
+        realtimeSync.broadcastLocalChange(updatedData);
+      }
       setActiveView('home');
       setJustFinishedReport(res.report);
     }
@@ -158,35 +190,69 @@ export default function App() {
 
   const handleDeleteReport = async (id: string) => {
     await deleteReport(id);
-    await loadData(false);
+    if (data) {
+      const updatedReports = data.reports.filter(r => r.id !== id);
+      const updatedData = { ...data, reports: updatedReports };
+      setData(updatedData);
+      realtimeSync.broadcastLocalChange(updatedData);
+    }
   };
 
-  // Handlers for Machines
+  // Handlers for Machines (Phone A -> Phone B instant sync)
   const handleSaveMachine = async (mach: Partial<Machine>) => {
-    await saveMachine(mach);
-    await loadData(false);
+    const res = await saveMachine(mach);
+    if (res.success && res.machine && data) {
+      const idx = data.machines.findIndex(m => m.id === res.machine.id);
+      const newMachines = [...data.machines];
+      if (idx >= 0) newMachines[idx] = res.machine;
+      else newMachines.unshift(res.machine);
+      const updatedData = { ...data, machines: newMachines };
+      setData(updatedData);
+      realtimeSync.broadcastLocalChange(updatedData);
+    }
   };
 
   const handleDeleteMachine = async (id: string) => {
     await deleteMachine(id);
-    await loadData(false);
+    if (data) {
+      const updatedMachines = data.machines.filter(m => m.id !== id);
+      const updatedData = { ...data, machines: updatedMachines };
+      setData(updatedData);
+      realtimeSync.broadcastLocalChange(updatedData);
+    }
   };
 
-  // Handlers for Clients
+  // Handlers for Clients (Phone A -> Phone B instant sync)
   const handleSaveClient = async (cli: Partial<Client>) => {
-    await saveClient(cli);
-    await loadData(false);
+    const res = await saveClient(cli);
+    if (res.success && res.client && data) {
+      const idx = data.clients.findIndex(c => c.id === res.client.id);
+      const newClients = [...data.clients];
+      if (idx >= 0) newClients[idx] = res.client;
+      else newClients.unshift(res.client);
+      const updatedData = { ...data, clients: newClients };
+      setData(updatedData);
+      realtimeSync.broadcastLocalChange(updatedData);
+    }
   };
 
   const handleDeleteClient = async (id: string) => {
     await deleteClient(id);
-    await loadData(false);
+    if (data) {
+      const updatedClients = data.clients.filter(c => c.id !== id);
+      const updatedData = { ...data, clients: updatedClients };
+      setData(updatedData);
+      realtimeSync.broadcastLocalChange(updatedData);
+    }
   };
 
-  // Handlers for Settings
+  // Handlers for Settings & Checklist (Phone A -> Phone B instant sync)
   const handleSaveAllSettings = async (updates: any) => {
-    await saveSettings(updates);
-    await loadData(false);
+    const res = await saveSettings(updates);
+    if (res.success && res.data) {
+      setData(res.data);
+      realtimeSync.broadcastLocalChange(res.data);
+    }
   };
 
   // Quick metrics for home screen
@@ -249,18 +315,12 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Multi-device sync indicator */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => loadData(false)}
-                    title="Sincronizar agora"
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 text-[11px] font-semibold text-emerald-400 border border-slate-700 hover:bg-slate-700 transition-colors"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>{isSyncing ? 'Sincronizando' : 'Online'}</span>
-                    <RefreshCw className={`w-3 h-3 text-slate-400 ${isSyncing ? 'animate-spin' : ''}`} />
-                  </button>
-                </div>
+                {/* Multi-device real-time sync badge - calm, stable, non-flickering */}
+                <SyncStatusBadge
+                  status={syncStatus}
+                  isSyncing={isSyncing}
+                  onForceSync={handleForceSync}
+                />
               </div>
             </div>
           </header>

@@ -78,6 +78,8 @@ export function readDb() {
   }
 }
 
+import { broadcastDataUpdate, registerSseClient, getCurrentVersion, getConnectedClientsCount } from './serverSync';
+
 export function writeDb(data: any) {
   memoryDb = data;
   try {
@@ -85,6 +87,8 @@ export function writeDb(data: any) {
   } catch (err) {
     // If running in serverless where disk is read-only, memoryDb still holds the changes
   }
+  // Immediately broadcast change to all connected devices in real time
+  broadcastDataUpdate(data);
 }
 
 export function createExpressApp() {
@@ -121,6 +125,28 @@ export function createExpressApp() {
       timestamp: new Date().toISOString(),
       appName: 'Kadu Manutenções'
     });
+  });
+
+  // Real-time synchronization state & version check
+  router.get('/sync/version', (req, res) => {
+    res.json({
+      version: getCurrentVersion(),
+      clients: getConnectedClientsCount(),
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // Server-Sent Events (SSE) stream for real-time live sync across devices
+  router.get('/sync/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (typeof (res as any).flushHeaders === 'function') {
+      (res as any).flushHeaders();
+    }
+    registerSseClient(res, readDb);
   });
 
   router.get('/data', (req, res) => {

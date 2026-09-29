@@ -71,6 +71,8 @@ export function saveToLocalCache(data: AppStateData): void {
   }
 }
 
+export const setLocalCache = saveToLocalCache;
+
 function updateLocalCache(updater: (current: AppStateData) => AppStateData): void {
   const current = getLocalCache() || INITIAL_APP_DATA;
   const next = updater(current);

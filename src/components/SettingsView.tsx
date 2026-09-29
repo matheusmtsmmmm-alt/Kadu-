@@ -19,10 +19,13 @@ import {
   Wrench,
   Eye,
   Download,
-  Star
+  Star,
+  Copy,
+  CheckCircle2,
+  RefreshCw
 } from 'lucide-react';
 import { CompanySettings, Technician, Client, Machine, MaintenanceReport } from '../types';
-import { uploadPhotoFile } from '../services/api';
+import { uploadPhotoFile, exportDataToJson, importDataFromJson } from '../services/api';
 import { OFFICIAL_INJECTION_CHECKLIST } from '../data/defaultChecklist';
 import { downloadReportPdf } from '../services/pdfGenerator';
 import { MachinesView } from './MachinesView';
@@ -77,6 +80,44 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [techList, setTechList] = useState<Technician[]>([...technicians]);
   const [auxList, setAuxList] = useState<string[]>([...assistants]);
   const [checkList, setCheckList] = useState<Array<{ id: string; label: string }>>([...checklistTemplate]);
+  
+  // Backup / Sync states
+  const [importJsonText, setImportJsonText] = useState('');
+  const [showImportBox, setShowImportBox] = useState(false);
+  const [backupMsg, setBackupMsg] = useState('');
+
+  const handleDownloadBackup = () => {
+    const jsonStr = exportDataToJson();
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kadu_manutencoes_dados_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setBackupMsg('Arquivo de backup baixado com sucesso!');
+    setTimeout(() => setBackupMsg(''), 3500);
+  };
+
+  const handleCopyBackup = () => {
+    const jsonStr = exportDataToJson();
+    navigator.clipboard.writeText(jsonStr);
+    setBackupMsg('Dados copiados para a área de transferência!');
+    setTimeout(() => setBackupMsg(''), 3500);
+  };
+
+  const handleImportBackup = async () => {
+    if (!importJsonText.trim()) return;
+    try {
+      await importDataFromJson(importJsonText);
+      setBackupMsg('Dados importados com sucesso! Atualizando aplicativo...');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (e: any) {
+      alert(e.message || 'Erro ao importar dados');
+    }
+  };
 
   // Synchronize internal state whenever props update
   useEffect(() => {
@@ -807,37 +848,125 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         {/* ============================================================== */}
         {/* TAB 5: ONLINE & SUPABASE */}
         {/* ============================================================== */}
+        {/* ============================================================== */}
+        {/* TAB 5: ONLINE & SUPABASE */}
+        {/* ============================================================== */}
         {activeTab === 'online' && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-5">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center">
                 <Globe className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Sincronização Online Multi-dispositivo</h3>
+                <h3 className="text-base font-bold text-slate-900">Sincronização & Domínio Vercel</h3>
                 <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                  🟢 Servidor Online Conectado (Celular 1, Celular 2, Tablet, PC)
+                  <CheckCircle2 className="w-3.5 h-3.5" /> 26 Máquinas Injetoras & Dados Pré-Carregados no Código
                 </span>
               </div>
             </div>
 
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-2">
-              <p className="font-semibold text-slate-700">
-                Como funciona o acesso simultâneo:
+            {backupMsg && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-800 flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span>{backupMsg}</span>
+              </div>
+            )}
+
+            {/* Vercel Status Info */}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-xs space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="font-extrabold text-blue-950 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  Pronto para Vercel & Domínio Próprio
+                </span>
+                <span className="bg-blue-200 text-blue-900 font-bold px-2 py-0.5 rounded-full text-[10px]">
+                  Auto-Contido
+                </span>
+              </div>
+              <p className="text-blue-900 leading-relaxed">
+                Todas as <strong>26 máquinas injetoras (INJ 01 a 13 e INJ A a O)</strong>, técnicos, checklist e configurações já estão compiladas diretamente no código do aplicativo. Mesmo sem servidor backend ativo, o app funciona 100% no seu domínio.
               </p>
-              <ul className="list-disc list-inside text-slate-600 space-y-1">
-                <li>Todos os aparelhos (celulares dos técnicos, tablets e computadores) compartilham os mesmos dados online.</li>
-                <li>Ao finalizar um relatório ou cadastrar uma máquina em um celular, todos os demais aparelhos recebem as atualizações.</li>
-                <li>As fotos e assinaturas são gravadas em storage online e organizadas automaticamente no PDF.</li>
-              </ul>
             </div>
 
-            <div className="space-y-3 pt-2">
+            {/* Instant Backup / Restore */}
+            <div className="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">
+                  Transferir Dados (AI Studio ➔ Vercel)
+                </h4>
+                <span className="text-[11px] font-semibold text-slate-500">Backup 1-Clique</span>
+              </div>
+              <p className="text-xs text-slate-600">
+                Se você fez alterações aqui e quer atualizar instantaneamente o seu domínio ou celular sem esperar novo deploy:
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={handleDownloadBackup}
+                  className="h-11 bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-blue-700" />
+                  <span>Baixar Backup Completo (.JSON)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCopyBackup}
+                  className="h-11 bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                >
+                  <Copy className="w-4 h-4 text-slate-600" />
+                  <span>Copiar Dados (Clipboard)</span>
+                </button>
+              </div>
+
+              {!showImportBox ? (
+                <button
+                  type="button"
+                  onClick={() => setShowImportBox(true)}
+                  className="w-full text-center text-xs font-bold text-blue-900 hover:text-blue-800 underline pt-1 cursor-pointer"
+                >
+                  + Restaurar / Importar Dados neste Aparelho
+                </button>
+              ) : (
+                <div className="pt-2 space-y-2">
+                  <label className="block text-xs font-bold text-slate-700">
+                    Cole o conteúdo do backup JSON abaixo para restaurar:
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={importJsonText}
+                    onChange={(e) => setImportJsonText(e.target.value)}
+                    placeholder='Cole aqui o JSON exportado...'
+                    className="w-full p-2.5 bg-white border border-slate-300 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-blue-600"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleImportBackup}
+                      className="flex-1 h-10 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                    >
+                      Confirmar Importação de Dados
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowImportBox(false)}
+                      className="px-4 h-10 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Supabase Connection */}
+            <div className="space-y-3 pt-1">
               <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Configuração Direta Supabase (Opcional)
+                Banco na Nuvem Supabase (Sincronização em Tempo Real)
               </h4>
               <p className="text-xs text-slate-500">
-                Se desejar apontar diretamente para seu próprio projeto Supabase na nuvem:
+                Para que relatórios criados em celulares diferentes sincronizem na mesma hora automaticamente:
               </p>
 
               <div>
@@ -865,7 +994,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <button
                 type="button"
                 onClick={handleSaveCompany}
-                className="w-full h-12 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl"
+                className="w-full h-12 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
               >
                 Salvar Configurações de Conexão
               </button>

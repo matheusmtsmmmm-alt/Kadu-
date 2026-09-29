@@ -1,5 +1,6 @@
 import { AppStateData, MaintenanceReport, Machine, Client, Technician, CompanySettings } from '../types';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { INITIAL_APP_DATA } from '../data/initialData';
 
 const CACHE_KEY = 'kadu_manutencoes_local_cache_v2';
 
@@ -24,7 +25,17 @@ export function getLocalCache(): AppStateData | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const parsed: AppStateData = JSON.parse(raw);
+    
+    // Safety check: ensure machines array is populated with default machines if empty
+    if (parsed && Array.isArray(parsed.machines)) {
+      for (const m of INITIAL_APP_DATA.machines) {
+        if (!parsed.machines.some(existing => existing.id === m.id || existing.name === m.name)) {
+          parsed.machines.push(m);
+        }
+      }
+    }
+    return parsed;
   } catch (err) {
     console.warn('Failed to parse local cache:', err);
     return null;
@@ -40,11 +51,9 @@ export function saveToLocalCache(data: AppStateData): void {
 }
 
 function updateLocalCache(updater: (current: AppStateData) => AppStateData): void {
-  const current = getLocalCache();
-  if (current) {
-    const next = updater(current);
-    saveToLocalCache(next);
-  }
+  const current = getLocalCache() || INITIAL_APP_DATA;
+  const next = updater(current);
+  saveToLocalCache(next);
 }
 
 export async function fetchAppData(): Promise<AppStateData> {
@@ -55,64 +64,93 @@ export async function fetchAppData(): Promise<AppStateData> {
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     const serverData: AppStateData = await res.json();
 
-    // If we have local data, merge carefully so client modifications are never wiped by a fresh server state
+    // Baseline initialized with all default machines and entities
+    const baseMachines = [...(serverData.machines?.length ? serverData.machines : INITIAL_APP_DATA.machines)];
+    for (const m of INITIAL_APP_DATA.machines) {
+      if (!baseMachines.some(existing => existing.id === m.id || existing.name === m.name)) {
+        baseMachines.push(m);
+      }
+    }
+
+    const baseClients = [...(serverData.clients?.length ? serverData.clients : INITIAL_APP_DATA.clients)];
+    for (const c of INITIAL_APP_DATA.clients) {
+      if (!baseClients.some(existing => existing.id === c.id || existing.name === c.name)) {
+        baseClients.push(c);
+      }
+    }
+
+    const baseTechnicians = serverData.technicians?.length ? serverData.technicians : INITIAL_APP_DATA.technicians;
+    const baseAssistants = serverData.assistants?.length ? serverData.assistants : INITIAL_APP_DATA.assistants;
+    const baseReports = serverData.reports?.length ? serverData.reports : INITIAL_APP_DATA.reports;
+
+    let mergedData: AppStateData = {
+      reports: [...baseReports],
+      machines: [...baseMachines],
+      clients: [...baseClients],
+      technicians: [...baseTechnicians],
+      assistants: [...baseAssistants],
+      checklistTemplate: serverData.checklistTemplate || INITIAL_APP_DATA.checklistTemplate,
+      companySettings: {
+        ...INITIAL_APP_DATA.companySettings,
+        ...(serverData.companySettings || {})
+      }
+    };
+
+    // If client has local modifications, merge on top
     if (localData) {
-      const mergedReports = [...serverData.reports];
-      // Keep any reports that exist in localData but might be missing on server
-      for (const locRep of localData.reports) {
-        const sIndex = mergedReports.findIndex(r => r.id === locRep.id);
+      for (const locRep of localData.reports || []) {
+        const sIndex = mergedData.reports.findIndex(r => r.id === locRep.id);
         if (sIndex < 0) {
-          mergedReports.unshift(locRep);
+          mergedData.reports.unshift(locRep);
         } else {
-          // If local report was updated more recently, keep local
           const locTime = new Date(locRep.updatedAt || locRep.createdAt || 0).getTime();
-          const srvTime = new Date(mergedReports[sIndex].updatedAt || mergedReports[sIndex].createdAt || 0).getTime();
+          const srvTime = new Date(mergedData.reports[sIndex].updatedAt || mergedData.reports[sIndex].createdAt || 0).getTime();
           if (locTime > srvTime) {
-            mergedReports[sIndex] = locRep;
+            mergedData.reports[sIndex] = locRep;
           }
         }
       }
 
-      // Merge machines
-      const mergedMachines = [...serverData.machines];
-      for (const locMach of localData.machines) {
-        if (!mergedMachines.some(m => m.id === locMach.id)) {
-          mergedMachines.unshift(locMach);
+      for (const locMach of localData.machines || []) {
+        if (!mergedData.machines.some(m => m.id === locMach.id)) {
+          mergedData.machines.unshift(locMach);
         }
       }
 
-      // Merge clients
-      const mergedClients = [...serverData.clients];
-      for (const locCli of localData.clients) {
-        if (!mergedClients.some(c => c.id === locCli.id)) {
-          mergedClients.unshift(locCli);
+      for (const locCli of localData.clients || []) {
+        if (!mergedData.clients.some(c => c.id === locCli.id)) {
+          mergedData.clients.unshift(locCli);
         }
       }
 
-      const mergedData: AppStateData = {
-        ...serverData,
-        reports: mergedReports,
-        machines: mergedMachines,
-        clients: mergedClients,
-        companySettings: {
-          ...serverData.companySettings,
-          ...(localData.companySettings || {})
-        }
-      };
-
-      saveToLocalCache(mergedData);
-      return mergedData;
+      if (localData.companySettings) {
+        mergedData.companySettings = {
+          ...mergedData.companySettings,
+          ...localData.companySettings
+        };
+      }
     }
 
-    // No local data yet, store server data
-    saveToLocalCache(serverData);
-    return serverData;
+    saveToLocalCache(mergedData);
+    return mergedData;
   } catch (err) {
-    console.warn('API fetch failed, using local offline cache:', err);
-    if (localData) {
-      return localData;
+    console.warn('Backend API offline or running in static Vercel mode. Using embedded data + cache:', err);
+    
+    // Foolproof fallback: always return all default data merged with whatever is in cache
+    let fallback = localData;
+    if (!fallback) {
+      fallback = INITIAL_APP_DATA;
+    } else {
+      // Ensure all 26 machines exist in fallback
+      for (const m of INITIAL_APP_DATA.machines) {
+        if (!fallback.machines.some(existing => existing.id === m.id || existing.name === m.name)) {
+          fallback.machines.push(m);
+        }
+      }
     }
-    throw err;
+
+    saveToLocalCache(fallback);
+    return fallback;
   }
 }
 
@@ -370,3 +408,43 @@ export async function uploadPhotoFile(base64: string): Promise<string> {
     return base64;
   }
 }
+
+export function exportDataToJson(): string {
+  const current = getLocalCache() || INITIAL_APP_DATA;
+  return JSON.stringify(current, null, 2);
+}
+
+export async function importDataFromJson(jsonStr: string): Promise<AppStateData> {
+  try {
+    const parsed = JSON.parse(jsonStr);
+    if (!parsed || typeof parsed !== 'object') {
+      throw new Error('Formato JSON inválido.');
+    }
+    const cleanData: AppStateData = {
+      reports: Array.isArray(parsed.reports) ? parsed.reports : INITIAL_APP_DATA.reports,
+      machines: Array.isArray(parsed.machines) && parsed.machines.length > 0 ? parsed.machines : INITIAL_APP_DATA.machines,
+      clients: Array.isArray(parsed.clients) && parsed.clients.length > 0 ? parsed.clients : INITIAL_APP_DATA.clients,
+      technicians: Array.isArray(parsed.technicians) && parsed.technicians.length > 0 ? parsed.technicians : INITIAL_APP_DATA.technicians,
+      assistants: Array.isArray(parsed.assistants) ? parsed.assistants : INITIAL_APP_DATA.assistants,
+      checklistTemplate: Array.isArray(parsed.checklistTemplate) ? parsed.checklistTemplate : INITIAL_APP_DATA.checklistTemplate,
+      companySettings: parsed.companySettings || INITIAL_APP_DATA.companySettings
+    };
+    saveToLocalCache(cleanData);
+    
+    // Also try saving to server if connected
+    try {
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cleanData)
+      });
+    } catch (e) {
+      // server offline
+    }
+    
+    return cleanData;
+  } catch (err: any) {
+    throw new Error(`Erro ao importar dados: ${err.message}`);
+  }
+}
+

@@ -27,6 +27,7 @@ import { CompanySettings, Technician, Client, Machine, MaintenanceReport } from 
 import { uploadPhotoFile, exportDataToJson, importDataFromJson } from '../services/api';
 import { OFFICIAL_INJECTION_CHECKLIST } from '../data/defaultChecklist';
 import { downloadReportPdf } from '../services/pdfGenerator';
+import { DEFAULT_LOGO_BASE64 } from '../data/defaultLogo';
 import { MachinesView } from './MachinesView';
 import { MachineBadge } from './MachineBadge';
 
@@ -193,8 +194,41 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const reader = new FileReader();
     reader.onload = async (ev) => {
       const b64 = ev.target?.result as string;
-      const uploadedUrl = await uploadPhotoFile(b64);
-      setCompanyForm(prev => ({ ...prev, logoUrl: uploadedUrl }));
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 800;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const isPng = file.type.includes('png');
+            const optimized = canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', 0.9);
+            setCompanyForm(prev => ({ ...prev, logoUrl: optimized }));
+            return;
+          }
+        } catch (e) {
+          // fallback
+        }
+        setCompanyForm(prev => ({ ...prev, logoUrl: b64 }));
+      };
+      img.onerror = () => {
+        setCompanyForm(prev => ({ ...prev, logoUrl: b64 }));
+      };
+      img.src = b64;
     };
     reader.readAsDataURL(file);
   };
@@ -338,18 +372,40 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <div className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
               <div className="w-16 h-16 rounded-xl bg-white border border-slate-300 overflow-hidden flex items-center justify-center p-1">
                 {companyForm.logoUrl ? (
-                  <img src={companyForm.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                  <img
+                    src={companyForm.logoUrl}
+                    alt="Logo"
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = DEFAULT_LOGO_BASE64;
+                    }}
+                  />
                 ) : (
-                  <Building2 className="w-8 h-8 text-slate-400" />
+                  <img
+                    src={DEFAULT_LOGO_BASE64}
+                    alt="Logo"
+                    className="w-full h-full object-contain"
+                  />
                 )}
               </div>
               <div className="flex-1">
                 <span className="text-xs font-bold text-slate-700 block">Logotipo KADU MANUTENÇÕES</span>
-                <span className="text-[11px] text-slate-500 block mb-2">Exibido no cabeçalho dos relatórios em PDF.</span>
-                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold rounded-lg transition-colors shadow-xs">
-                  <Upload className="w-3.5 h-3.5" /> Alterar Logo
-                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                </label>
+                <span className="text-[11px] text-slate-500 block mb-2">Exibido no cabeçalho do app e nos relatórios em PDF.</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold rounded-lg transition-colors shadow-xs">
+                    <Upload className="w-3.5 h-3.5" /> Alterar Logo
+                    <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                  </label>
+                  {companyForm.logoUrl !== DEFAULT_LOGO_BASE64 && (
+                    <button
+                      type="button"
+                      onClick={() => setCompanyForm(prev => ({ ...prev, logoUrl: DEFAULT_LOGO_BASE64 }))}
+                      className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition-colors"
+                    >
+                      Restaurar Logo Padrão
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 

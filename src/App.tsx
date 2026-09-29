@@ -44,6 +44,7 @@ import { SettingsView } from './components/SettingsView';
 import { ReportSuccessModal } from './components/ReportSuccessModal';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { downloadReportPdf } from './services/pdfGenerator';
+import { DEFAULT_LOGO_BASE64 } from './data/defaultLogo';
 
 type ActiveView = 'home' | 'new_report' | 'history' | 'machines' | 'settings';
 
@@ -211,7 +212,7 @@ export default function App() {
     phone: '(11) 98765-4321',
     email: 'contato@kadumanutencoes.com.br',
     address: 'Av. Industrial, 1420 - São Paulo, SP',
-    logoUrl: '/src/assets/images/kadu_logo_1790525097159.jpg',
+    logoUrl: DEFAULT_LOGO_BASE64,
     primaryColor: '#0f172a',
     accentColor: '#0284c7',
     defaultWhatsappMessage: '',
@@ -230,13 +231,14 @@ export default function App() {
             <div className="max-w-xl mx-auto">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {company.logoUrl && (
-                    <img
-                      src={company.logoUrl}
-                      alt="Logo"
-                      className="w-11 h-11 rounded-xl object-contain bg-white/10 p-1 border border-white/20"
-                    />
-                  )}
+                  <img
+                    src={company.logoUrl || DEFAULT_LOGO_BASE64}
+                    alt="Logo"
+                    className="w-11 h-11 rounded-xl object-contain bg-white/10 p-1 border border-white/20"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = DEFAULT_LOGO_BASE64;
+                    }}
+                  />
                   <div>
                     <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-none text-white">
                       KADU MANUTENÇÕES

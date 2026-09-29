@@ -1,6 +1,7 @@
 import { AppStateData, MaintenanceReport, Machine, Client, Technician, CompanySettings } from '../types';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { INITIAL_APP_DATA } from '../data/initialData';
+import { DEFAULT_LOGO_BASE64 } from '../data/defaultLogo';
 
 const CACHE_KEY = 'kadu_manutencoes_local_cache_v2';
 
@@ -20,6 +21,20 @@ export function getSupabaseClient(url?: string, key?: string): SupabaseClient | 
   return null;
 }
 
+// Ensure logoUrl is always valid and never breaks on custom domain or Vercel
+export function sanitizeLogoUrl(logoUrl?: string): string {
+  if (!logoUrl) return DEFAULT_LOGO_BASE64;
+  // If it points to broken Vite /src/ path or missing asset, recover with embedded base64
+  if (
+    logoUrl.startsWith('/src/assets') || 
+    (logoUrl.includes('kadu_logo_1790525097159.jpg') && !logoUrl.startsWith('data:')) ||
+    logoUrl.startsWith('/uploads/')
+  ) {
+    return DEFAULT_LOGO_BASE64;
+  }
+  return logoUrl;
+}
+
 // Local cache helper functions
 export function getLocalCache(): AppStateData | null {
   try {
@@ -35,6 +50,12 @@ export function getLocalCache(): AppStateData | null {
         }
       }
     }
+
+    // Auto-heal logoUrl in cached companySettings so custom domain never has missing logo
+    if (parsed && parsed.companySettings) {
+      parsed.companySettings.logoUrl = sanitizeLogoUrl(parsed.companySettings.logoUrl);
+    }
+
     return parsed;
   } catch (err) {
     console.warn('Failed to parse local cache:', err);
@@ -131,6 +152,10 @@ export async function fetchAppData(): Promise<AppStateData> {
       }
     }
 
+    if (mergedData.companySettings) {
+      mergedData.companySettings.logoUrl = sanitizeLogoUrl(mergedData.companySettings.logoUrl);
+    }
+
     saveToLocalCache(mergedData);
     return mergedData;
   } catch (err) {
@@ -147,6 +172,10 @@ export async function fetchAppData(): Promise<AppStateData> {
           fallback.machines.push(m);
         }
       }
+    }
+
+    if (fallback.companySettings) {
+      fallback.companySettings.logoUrl = sanitizeLogoUrl(fallback.companySettings.logoUrl);
     }
 
     saveToLocalCache(fallback);
@@ -400,13 +429,16 @@ export async function uploadPhotoFile(base64: string): Promise<string> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imageBase64: base64 })
     });
-    if (!res.ok) throw new Error('Upload failed');
-    const data = await res.json();
-    return data.url;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url && !data.url.startsWith('/uploads/')) {
+        return data.url;
+      }
+    }
   } catch (err) {
-    console.warn('Backend upload failed, keeping base64 for self-contained portability:', err);
-    return base64;
+    // ignore
   }
+  return base64;
 }
 
 export function exportDataToJson(): string {

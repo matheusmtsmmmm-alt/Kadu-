@@ -1,4 +1,5 @@
 import { AppStateData } from '../types';
+import { DEFAULT_LOGO_BASE64 } from './defaultLogo';
 
 export const INITIAL_APP_DATA: AppStateData = {
   reports: [
@@ -496,7 +497,7 @@ export const INITIAL_APP_DATA: AppStateData = {
     phone: "(11) 98765-4321",
     email: "contato@kadumanutencoes.com.br",
     address: "Av. Industrial, 1420 - São Paulo, SP",
-    logoUrl: "/src/assets/images/kadu_logo_1790525097159.jpg",
+    logoUrl: DEFAULT_LOGO_BASE64,
     primaryColor: "#0f172a",
     accentColor: "#0284c7",
     supabaseUrl: "",

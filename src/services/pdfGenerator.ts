@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { MaintenanceReport, CompanySettings, ReportPhoto } from '../types';
+import { DEFAULT_LOGO_BASE64 } from '../data/defaultLogo';
 
 // Helper to convert any image URL or file to base64 Data URL for jsPDF
 async function getBase64ImageFromUrl(imageUrl: string): Promise<string | null> {
@@ -70,7 +71,13 @@ export async function generateReportPdf(report: MaintenanceReport, settings: Com
   const borderColor = [226, 232, 240]; // #e2e8f0
 
   // Pre-fetch images
-  const logoBase64 = settings.logoUrl ? await getBase64ImageFromUrl(settings.logoUrl) : null;
+  let logoBase64: string | null = null;
+  if (settings.logoUrl) {
+    logoBase64 = await getBase64ImageFromUrl(settings.logoUrl);
+  }
+  if (!logoBase64) {
+    logoBase64 = DEFAULT_LOGO_BASE64;
+  }
   const techSigBase64 = report.signatures.technician.signatureImage
     ? await getBase64ImageFromUrl(report.signatures.technician.signatureImage)
     : null;
@@ -122,9 +129,14 @@ export async function generateReportPdf(report: MaintenanceReport, settings: Com
   // Logo (Left)
   if (logoBase64) {
     try {
-      doc.addImage(logoBase64, 'JPEG', margin + 4, currentY + 4.5, 26, 26);
+      const format = logoBase64.includes('image/png') ? 'PNG' : 'JPEG';
+      doc.addImage(logoBase64, format, margin + 4, currentY + 4.5, 26, 26);
     } catch {
-      // Fallback text
+      try {
+        doc.addImage(DEFAULT_LOGO_BASE64, 'JPEG', margin + 4, currentY + 4.5, 26, 26);
+      } catch {
+        // Fallback text
+      }
     }
   }
 

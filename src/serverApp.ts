@@ -49,8 +49,17 @@ export function readDb() {
     }
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
     const parsed = JSON.parse(raw);
-    if (parsed.companySettings && !parsed.companySettings.adminPin) {
-      parsed.companySettings.adminPin = "1111";
+    if (parsed.companySettings) {
+      if (!parsed.companySettings.adminPin) {
+        parsed.companySettings.adminPin = "1111";
+      }
+      if (
+        !parsed.companySettings.logoUrl ||
+        parsed.companySettings.logoUrl.startsWith('/src/assets') ||
+        (parsed.companySettings.logoUrl.includes('kadu_logo_1790525097159.jpg') && !parsed.companySettings.logoUrl.startsWith('data:'))
+      ) {
+        parsed.companySettings.logoUrl = INITIAL_APP_DATA.companySettings.logoUrl;
+      }
     }
     // Safety check: ensure all 26 default machines exist
     if (parsed.machines && Array.isArray(parsed.machines)) {
@@ -261,29 +270,9 @@ export function createExpressApp() {
         return res.status(400).json({ error: 'No image data provided' });
       }
 
-      // If disk is writable, save file
-      try {
-        const matches = imageBase64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
-        let buffer: Buffer;
-        let ext = 'jpg';
-
-        if (matches && matches.length === 3) {
-          ext = matches[1].split('/')[1] || 'jpg';
-          buffer = Buffer.from(matches[2], 'base64');
-        } else {
-          buffer = Buffer.from(imageBase64, 'base64');
-        }
-
-        const cleanName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
-        const filePath = path.join(UPLOADS_DIR, cleanName);
-        fs.writeFileSync(filePath, buffer);
-
-        const publicUrl = `/uploads/${cleanName}`;
-        return res.json({ success: true, url: publicUrl });
-      } catch (writeErr) {
-        // Fallback: return base64 data directly for pure serverless portability
-        return res.json({ success: true, url: imageBase64 });
-      }
+      // Return base64 URL directly for 100% cloud, Vercel and custom domain portability
+      // This prevents broken images when running on ephemeral serverless containers
+      return res.json({ success: true, url: imageBase64 });
     } catch (err: any) {
       console.error('Upload error:', err);
       res.status(500).json({ error: err.message });

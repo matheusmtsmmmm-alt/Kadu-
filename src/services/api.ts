@@ -2,6 +2,16 @@ import { AppStateData, MaintenanceReport, Machine, Client, Technician, CompanySe
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { INITIAL_APP_DATA } from '../data/initialData';
 import { DEFAULT_LOGO_BASE64 } from '../data/defaultLogo';
+import { 
+  isFirebaseConfigured, 
+  saveReportToFirestore, 
+  deleteReportFromFirestore, 
+  saveMachineToFirestore, 
+  deleteMachineFromFirestore, 
+  saveClientToFirestore, 
+  deleteClientFromFirestore, 
+  saveSettingsToFirestore 
+} from './firebase';
 
 const CACHE_KEY = 'kadu_manutencoes_local_cache_v2';
 
@@ -187,7 +197,14 @@ export async function saveReport(report: Partial<MaintenanceReport>): Promise<{ 
     return { ...current, reports: newReports };
   });
 
-  // 2. Persist to server
+  // 2. Persist to Firestore for instant multi-device cloud sync on custom domain
+  if (isFirebaseConfigured) {
+    saveReportToFirestore(finalReport).catch(err => {
+      console.warn('Firestore save report error:', err);
+    });
+  }
+
+  // 3. Persist to server
   try {
     const res = await fetch('/api/reports', {
       method: 'POST',
@@ -218,7 +235,14 @@ export async function deleteReport(id: string): Promise<{ success: boolean; id: 
     reports: current.reports.filter(r => r.id !== id)
   }));
 
-  // 2. Delete on server
+  // 2. Delete on Firestore
+  if (isFirebaseConfigured) {
+    deleteReportFromFirestore(id).catch(err => {
+      console.warn('Firestore delete report error:', err);
+    });
+  }
+
+  // 3. Delete on server
   try {
     const res = await fetch(`/api/reports/${id}`, { method: 'DELETE' });
     if (res.ok) return await res.json();
@@ -256,7 +280,14 @@ export async function saveMachine(machine: Partial<Machine>): Promise<{ success:
     return { ...current, machines: newMachines };
   });
 
-  // 2. Persist to server
+  // 2. Persist to Firestore for instant cloud sync
+  if (isFirebaseConfigured) {
+    saveMachineToFirestore(finalMachine).catch(err => {
+      console.warn('Firestore save machine error:', err);
+    });
+  }
+
+  // 3. Persist to server
   try {
     const res = await fetch('/api/machines', {
       method: 'POST',
@@ -281,7 +312,14 @@ export async function deleteMachine(id: string): Promise<{ success: boolean; id:
     machines: current.machines.filter(m => m.id !== id)
   }));
 
-  // 2. Delete on server
+  // 2. Delete on Firestore
+  if (isFirebaseConfigured) {
+    deleteMachineFromFirestore(id).catch(err => {
+      console.warn('Firestore delete machine error:', err);
+    });
+  }
+
+  // 3. Delete on server
   try {
     const res = await fetch(`/api/machines/${id}`, { method: 'DELETE' });
     if (res.ok) return await res.json();
@@ -314,7 +352,14 @@ export async function saveClient(client: Partial<Client>): Promise<{ success: bo
     return { ...current, clients: newClients };
   });
 
-  // 2. Persist to server
+  // 2. Persist to Firestore
+  if (isFirebaseConfigured) {
+    saveClientToFirestore(finalClient).catch(err => {
+      console.warn('Firestore save client error:', err);
+    });
+  }
+
+  // 3. Persist to server
   try {
     const res = await fetch('/api/clients', {
       method: 'POST',
@@ -336,7 +381,14 @@ export async function deleteClient(id: string): Promise<{ success: boolean; id: 
     clients: current.clients.filter(c => c.id !== id)
   }));
 
-  // 2. Delete on server
+  // 2. Delete on Firestore
+  if (isFirebaseConfigured) {
+    deleteClientFromFirestore(id).catch(err => {
+      console.warn('Firestore delete client error:', err);
+    });
+  }
+
+  // 3. Delete on server
   try {
     const res = await fetch(`/api/clients/${id}`, { method: 'DELETE' });
     if (res.ok) return await res.json();
@@ -366,7 +418,18 @@ export async function saveSettings(settings: {
     };
   });
 
-  // 2. Persist to server
+  // 2. Persist to Firestore
+  if (isFirebaseConfigured) {
+    saveSettingsToFirestore({
+      companySettings: settings.companySettings as CompanySettings,
+      checklistTemplate: settings.checklistTemplate,
+      assistants: settings.assistants
+    }).catch(err => {
+      console.warn('Firestore save settings error:', err);
+    });
+  }
+
+  // 3. Persist to server
   try {
     const res = await fetch('/api/settings', {
       method: 'POST',

@@ -1,0 +1,134 @@
+{
+  "entities": {
+    "MaintenanceReport": {
+      "title": "MaintenanceReport",
+      "description": "Relatório de manutenção preventiva ou corretiva de máquina injetora",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string" },
+        "equipmentStatus": { "type": "string" },
+        "client": { "type": "object" },
+        "machine": { "type": "object" },
+        "technician": { "type": "object" },
+        "assistant": { "type": "object" },
+        "checklist": { "type": "array" },
+        "description": { "type": "string" },
+        "partsReplaced": { "type": "string" },
+        "observations": { "type": "string" },
+        "photos": { "type": "array" },
+        "clientSignature": { "type": "string" },
+        "technicianSignature": { "type": "string" },
+        "clientSignerName": { "type": "string" },
+        "clientSignerRole": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "code", "date", "status", "machine", "technician"]
+    },
+    "Machine": {
+      "title": "Machine",
+      "description": "Máquina injetora da fábrica ou cliente",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "model": { "type": "string" },
+        "tag": { "type": "string" },
+        "tonnage": { "type": "string" },
+        "pavilhao": { "type": "string" },
+        "manufacturer": { "type": "string" },
+        "serialNumber": { "type": "string" },
+        "location": { "type": "string" },
+        "clientName": { "type": "string" },
+        "horometer": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Cliente ou planta industrial atendida",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "document": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "contactPerson": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "Technician": {
+      "title": "Technician",
+      "description": "Técnico responsável ou mecânico/eletricista",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "specialty": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "Assistant": {
+      "title": "Assistant",
+      "description": "Auxiliar técnico de manutenção",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "CompanySettings": {
+      "title": "CompanySettings",
+      "description": "Dados da empresa, logotipo e checklist padrão",
+      "type": "object",
+      "properties": {
+        "companyName": { "type": "string" },
+        "tradeName": { "type": "string" },
+        "document": { "type": "string" },
+        "stateRegistration": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "adminPin": { "type": "string" },
+        "checklistTemplate": { "type": "array" },
+        "version": { "type": "number" },
+        "lastModified": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/reports/{reportId}": {
+      "schema": "MaintenanceReport",
+      "description": "Coleção de relatórios de manutenção gerados"
+    },
+    "/machines/{machineId}": {
+      "schema": "Machine",
+      "description": "Coleção de máquinas injetoras cadastradas"
+    },
+    "/clients/{clientId}": {
+      "schema": "Client",
+      "description": "Coleção de clientes e empresas parceiras"
+    },
+    "/technicians/{technicianId}": {
+      "schema": "Technician",
+      "description": "Coleção de técnicos cadastrados"
+    },
+    "/assistants/{assistantId}": {
+      "schema": "Assistant",
+      "description": "Coleção de auxiliares técnicos"
+    },
+    "/settings/{settingsId}": {
+      "schema": "CompanySettings",
+      "description": "Configurações da empresa e checklist padrão"
+    }
+  }
+}

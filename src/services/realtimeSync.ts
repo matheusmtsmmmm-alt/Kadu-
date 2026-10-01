@@ -1,9 +1,11 @@
 import { AppStateData } from '../types';
-import { fetchAppData, setLocalCache, sanitizeLogoUrl } from './api';
+import { fetchAppData, setLocalCache, sanitizeLogoUrl, getLocalCache } from './api';
+import { INITIAL_APP_DATA } from '../data/initialData';
+import { isFirebaseConfigured, subscribeToFirestore } from './firebase';
 
 export interface RealtimeStatus {
   status: 'connected' | 'syncing' | 'offline';
-  mode: 'websocket' | 'sse' | 'polling' | 'offline';
+  mode: 'firestore' | 'websocket' | 'sse' | 'polling' | 'offline';
   connectedClients: number;
   lastSyncedAt: Date | null;
   version: number;
@@ -28,6 +30,7 @@ class RealtimeSyncService {
   private currentMode: RealtimeStatus['mode'] = 'offline';
   private currentStatus: RealtimeStatus['status'] = 'syncing';
   private retryCount = 0;
+  private unsubscribeFirestore: (() => void) | null = null;
 
   constructor() {
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
@@ -45,6 +48,20 @@ class RealtimeSyncService {
   }
 
   public init() {
+    // 1. Prioritize Firestore real-time cloud listeners for custom domains and multi-device sync
+    if (isFirebaseConfigured) {
+      try {
+        this.unsubscribeFirestore = subscribeToFirestore((cloudData) => {
+          this.handleIncomingCloudData(cloudData);
+        }, (status) => {
+          this.updateStatus(status, 'firestore');
+        });
+      } catch (err) {
+        console.warn('Firestore subscription failed, falling back:', err);
+      }
+    }
+
+    // 2. Also keep local WebSocket/SSE fallback active for dev environment
     this.connect();
     this.startVersionPolling();
 
@@ -61,6 +78,10 @@ class RealtimeSyncService {
   }
 
   public destroy() {
+    if (this.unsubscribeFirestore) {
+      this.unsubscribeFirestore();
+      this.unsubscribeFirestore = null;
+    }
     if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
     if (this.versionPollInterval) clearInterval(this.versionPollInterval);
     if (this.ws) {
@@ -316,6 +337,59 @@ class RealtimeSyncService {
     } catch {
       if (!navigator.onLine) {
         this.updateStatus('offline', 'offline');
+      }
+    }
+  }
+
+  /**
+   * Handles incoming real-time data from Google Cloud Firestore
+   */
+  private handleIncomingCloudData(cloudData: Partial<AppStateData>) {
+    if (!cloudData) return;
+    this.lastSyncedAt = new Date();
+    this.currentVersion = Date.now();
+
+    const current = getLocalCache() || INITIAL_APP_DATA;
+    const merged: AppStateData = {
+      reports: cloudData.reports !== undefined ? cloudData.reports : current.reports,
+      machines: cloudData.machines !== undefined ? cloudData.machines : current.machines,
+      clients: cloudData.clients !== undefined ? cloudData.clients : current.clients,
+      technicians: cloudData.technicians !== undefined ? cloudData.technicians : current.technicians,
+      assistants: cloudData.assistants !== undefined ? cloudData.assistants : current.assistants,
+      checklistTemplate: (cloudData.checklistTemplate && cloudData.checklistTemplate.length >= 20)
+        ? cloudData.checklistTemplate
+        : current.checklistTemplate,
+      companySettings: {
+        ...current.companySettings,
+        ...(cloudData.companySettings || {})
+      },
+      version: this.currentVersion,
+      lastModified: new Date().toISOString()
+    };
+
+    if (merged.companySettings) {
+      merged.companySettings.logoUrl = sanitizeLogoUrl(merged.companySettings.logoUrl);
+    }
+
+    setLocalCache(merged);
+
+    this.dataListeners.forEach((listener) => {
+      try {
+        listener(merged);
+      } catch (err) {
+        console.error('Error notifying data listener:', err);
+      }
+    });
+
+    if (this.broadcastChannel) {
+      try {
+        this.broadcastChannel.postMessage({
+          type: 'DATA_UPDATE',
+          data: merged,
+          version: this.currentVersion
+        });
+      } catch {
+        // ignore
       }
     }
   }

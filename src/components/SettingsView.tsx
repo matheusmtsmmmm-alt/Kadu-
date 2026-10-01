@@ -986,19 +986,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </div>
             )}
 
-            {/* Vercel Status Info */}
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-xs space-y-2.5">
+            {/* Firebase Realtime Cloud Status Banner */}
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="font-extrabold text-blue-950 uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  Pronto para Vercel & Domínio Próprio
+                <span className="font-extrabold text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Firebase Firestore Cloud Ativo em Tempo Real
                 </span>
-                <span className="bg-blue-200 text-blue-900 font-bold px-2 py-0.5 rounded-full text-[10px]">
-                  Auto-Contido
+                <span className="bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-full text-[10px]">
+                  Multi-Aparelhos & Domínio Próprio
                 </span>
               </div>
-              <p className="text-blue-900 leading-relaxed">
-                Todas as <strong>26 máquinas injetoras (INJ 01 a 13 e INJ A a O)</strong>, técnicos, checklist e configurações já estão compiladas diretamente no código do aplicativo. Mesmo sem servidor backend ativo, o app funciona 100% no seu domínio.
+              <p className="text-emerald-900 leading-relaxed font-medium">
+                O banco de dados em nuvem <strong>Google Firebase Firestore</strong> está configurado e ativo! Qualquer relatório finalizado, máquina adicionada, editada ou excluída em qualquer celular aparece <strong>instantaneamente (&lt; 1 segundo)</strong> nos celulares de todos os outros técnicos e no seu domínio próprio (Vercel ou servidor).
               </p>
             </div>
 

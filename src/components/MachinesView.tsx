@@ -78,7 +78,7 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
       tag: '',
       clientName: clients[0]?.name || 'Kadu Manutenções',
       horometer: '',
-      location: selectedPavilhao === 'P2' ? 'Pavilhão 2 (P2)' : 'Pavilhão 1 (P1)',
+      location: selectedPavilhao === 'P2' ? 'Produção 2 (P2)' : 'Produção 1 (P1)',
       manufacturer: ''
     });
     setEditingMachine(null);
@@ -112,8 +112,9 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
 
   const confirmDeleteMachine = async () => {
     if (!machineToDelete) return;
-    await onDeleteMachine(machineToDelete);
+    const targetId = machineToDelete;
     setMachineToDelete(null);
+    await onDeleteMachine(targetId);
   };
 
   return (
@@ -199,11 +200,11 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
                 : 'text-slate-600 hover:text-blue-900'
             }`}
           >
-            <span>PAVILHÃO 1 (P1)</span>
+            <span>PRODUÇÃO 1 (P1)</span>
             <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
               selectedPavilhao === 'P1' ? 'bg-blue-800 text-white' : 'bg-slate-300 text-slate-700'
             }`}>
-              1 a 13
+              {p1Count} maq
             </span>
           </button>
 
@@ -216,11 +217,11 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
                 : 'text-slate-600 hover:text-blue-900'
             }`}
           >
-            <span>PAVILHÃO 2 (P2)</span>
+            <span>PRODUÇÃO 2 (P2)</span>
             <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
               selectedPavilhao === 'P2' ? 'bg-blue-800 text-white' : 'bg-slate-300 text-slate-700'
             }`}>
-              A até O
+              {p2Count} maq
             </span>
           </button>
         </div>
@@ -283,7 +284,7 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
 
                         {mach.pavilhao && (
                           <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
-                            {mach.pavilhao === 'P1' ? 'Pavilhão 1' : mach.pavilhao === 'P2' ? 'Pavilhão 2' : mach.pavilhao}
+                            {mach.pavilhao === 'P1' ? 'Produção 1' : mach.pavilhao === 'P2' ? 'Produção 2' : mach.pavilhao}
                           </span>
                         )}
                       </div>
@@ -299,15 +300,17 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
 
                   <div className="flex items-center gap-1 shrink-0">
                     <button
+                      type="button"
                       onClick={() => handleOpenEdit(mach)}
-                      className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors"
+                      className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
                       title="Editar"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleDelete(mach.id)}
-                      className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-600 flex items-center justify-center transition-colors"
+                      className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-600 flex items-center justify-center transition-colors cursor-pointer"
                       title="Excluir"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -325,7 +328,7 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
                     <span className="font-bold text-amber-800">{mach.tonnage || '---'}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block font-semibold text-[11px]">Pavilhão:</span>
+                    <span className="text-slate-400 block font-semibold text-[11px]">Produção:</span>
                     <span className="font-bold text-slate-800">{mach.pavilhao || (mach.location?.includes('P1') ? 'P1' : mach.location?.includes('P2') ? 'P2' : '---')}</span>
                   </div>
                   <div>
@@ -393,7 +396,7 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
 
                 <div>
                   <label className="block font-bold text-slate-700 uppercase mb-1">
-                    Pavilhão
+                    Produção
                   </label>
                   <select
                     value={formData.pavilhao || 'P1'}
@@ -402,13 +405,13 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
                       setFormData(prev => ({
                         ...prev,
                         pavilhao: pav,
-                        location: pav === 'P1' ? 'Pavilhão 1 (P1)' : pav === 'P2' ? 'Pavilhão 2 (P2)' : prev.location
+                        location: pav === 'P1' ? 'Produção 1 (P1)' : pav === 'P2' ? 'Produção 2 (P2)' : prev.location
                       }));
                     }}
                     className="w-full h-10 px-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none"
                   >
-                    <option value="P1">Pavilhão 1 (P1)</option>
-                    <option value="P2">Pavilhão 2 (P2)</option>
+                    <option value="P1">Produção 1 (P1)</option>
+                    <option value="P2">Produção 2 (P2)</option>
                     <option value="Geral">Geral / Outro</option>
                   </select>
                 </div>
@@ -466,7 +469,7 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
                   type="text"
                   value={formData.location || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                  placeholder="Ex: Pavilhão 1 (P1)"
+                  placeholder="Ex: Produção 1 (P1)"
                   className="w-full h-10 px-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none"
                 />
               </div>
@@ -494,35 +497,48 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
       )}
 
       {/* Delete Confirmation Modal */}
-      {machineToDelete && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 text-center animate-in fade-in zoom-in-95">
-            <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Trash2 className="w-6 h-6" />
-            </div>
-            <h3 className="text-base font-bold text-slate-900 mb-1">Excluir Máquina?</h3>
-            <p className="text-xs text-slate-500 mb-5">
-              Esta ação removerá esta máquina e suas configurações da lista de equipamentos.
-            </p>
-            <div className="grid grid-cols-2 gap-2.5">
-              <button
-                type="button"
-                onClick={() => setMachineToDelete(null)}
-                className="h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={confirmDeleteMachine}
-                className="h-11 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
-              >
-                Confirmar Exclusão
-              </button>
+      {machineToDelete && (() => {
+        const targetMach = machines.find(m => m.id === machineToDelete);
+        return (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 text-center animate-in fade-in zoom-in-95">
+              <div className="w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-xs">
+                <Trash2 className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-extrabold text-slate-900 mb-1">Excluir Máquina?</h3>
+              {targetMach && (
+                <div className="my-2.5 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                  <p className="text-sm font-black text-slate-900 leading-tight">
+                    {targetMach.name}
+                  </p>
+                  <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                    {targetMach.model} {targetMach.tag ? `• TAG: ${targetMach.tag}` : ''}
+                  </p>
+                </div>
+              )}
+              <p className="text-xs text-slate-500 mb-5">
+                Esta ação removerá esta máquina permanentemente de todos os dispositivos.
+              </p>
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setMachineToDelete(null)}
+                  className="h-12 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteMachine}
+                  className="h-12 bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  Confirmar Exclusão
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };

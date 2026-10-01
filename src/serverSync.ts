@@ -8,11 +8,17 @@ const wsClients = new Set<WebSocket>();
 // Set of connected SSE clients (fallback for environments where WS is limited)
 const sseClients = new Set<Response>();
 
-let currentVersion = Date.now();
+let currentVersion = 1;
 let lastBroadcastData: any = null;
 
 export function getCurrentVersion() {
   return currentVersion;
+}
+
+export function setCurrentVersion(v: number) {
+  if (typeof v === 'number' && v > 0) {
+    currentVersion = v;
+  }
 }
 
 export function getConnectedClientsCount() {
@@ -23,8 +29,12 @@ export function getConnectedClientsCount() {
  * Broadcasts data update to all connected phones/devices immediately.
  */
 export function broadcastDataUpdate(data: any) {
-  currentVersion = Date.now();
-  data.version = currentVersion;
+  if (data && typeof data.version === 'number') {
+    currentVersion = data.version;
+  } else {
+    currentVersion++;
+    if (data) data.version = currentVersion;
+  }
   lastBroadcastData = data;
 
   const payload = JSON.stringify({
@@ -69,11 +79,36 @@ export function setupWebSocketServer(server: HttpServer, getLatestData: () => an
 
   server.on('upgrade', (request, socket, head) => {
     const url = request.url || '';
+    const protocol = request.headers['sec-websocket-protocol'] || '';
+
+    // Handle vite-hmr gracefully so Vite client never fails
+    if (protocol.includes('vite-hmr')) {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        try {
+          ws.send(JSON.stringify({ type: 'connected' }));
+        } catch {
+          // ignore
+        }
+        ws.on('message', (msg) => {
+          try {
+            const data = JSON.parse(msg.toString());
+            if (data.type === 'ping') {
+              ws.send(JSON.stringify({ type: 'pong' }));
+            }
+          } catch {
+            // ignore
+          }
+        });
+      });
+      return;
+    }
+
     // Accept upgrades on /ws, /api/ws, or /
     if (url.startsWith('/ws') || url.startsWith('/api/ws')) {
       wss.handleUpgrade(request, socket, head, (ws) => {
         wss.emit('connection', ws, request);
       });
+      return;
     }
   });
 

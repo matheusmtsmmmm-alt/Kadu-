@@ -42,13 +42,9 @@ export function getLocalCache(): AppStateData | null {
     if (!raw) return null;
     const parsed: AppStateData = JSON.parse(raw);
     
-    // Safety check: ensure machines array is populated with default machines if empty
+    // Clean out any outdated compressor maq_3 if present and preserve user deletions
     if (parsed && Array.isArray(parsed.machines)) {
-      for (const m of INITIAL_APP_DATA.machines) {
-        if (!parsed.machines.some(existing => existing.id === m.id || existing.name === m.name)) {
-          parsed.machines.push(m);
-        }
-      }
+      parsed.machines = parsed.machines.filter(m => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'));
     }
 
     // Auto-heal logoUrl in cached companySettings so custom domain never has missing logo
@@ -87,13 +83,9 @@ export async function fetchAppData(): Promise<AppStateData> {
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     const serverData: AppStateData = await res.json();
 
-    // Baseline initialized with all default machines and entities
-    const baseMachines = [...(serverData.machines?.length ? serverData.machines : INITIAL_APP_DATA.machines)];
-    for (const m of INITIAL_APP_DATA.machines) {
-      if (!baseMachines.some(existing => existing.id === m.id || existing.name === m.name)) {
-        baseMachines.push(m);
-      }
-    }
+    // Respect server state and preserve user deletions
+    let baseMachines = Array.isArray(serverData.machines) ? serverData.machines : INITIAL_APP_DATA.machines;
+    baseMachines = baseMachines.filter(m => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'));
 
     const baseClients = [...(serverData.clients?.length ? serverData.clients : INITIAL_APP_DATA.clients)];
     for (const c of INITIAL_APP_DATA.clients) {
@@ -106,7 +98,8 @@ export async function fetchAppData(): Promise<AppStateData> {
     const baseAssistants = serverData.assistants?.length ? serverData.assistants : INITIAL_APP_DATA.assistants;
     const baseReports = serverData.reports?.length ? serverData.reports : INITIAL_APP_DATA.reports;
 
-    let mergedData: AppStateData = {
+    // Clean, server-authoritative state shared across all mobile devices
+    const cleanData: AppStateData = {
       reports: [...baseReports],
       machines: [...baseMachines],
       clients: [...baseClients],
@@ -116,50 +109,18 @@ export async function fetchAppData(): Promise<AppStateData> {
       companySettings: {
         ...INITIAL_APP_DATA.companySettings,
         ...(serverData.companySettings || {})
-      }
+      },
+      version: serverData.version || 1,
+      lastModified: serverData.lastModified || new Date().toISOString()
     };
 
-    // If client has local modifications, merge on top
-    if (localData) {
-      for (const locRep of localData.reports || []) {
-        const sIndex = mergedData.reports.findIndex(r => r.id === locRep.id);
-        if (sIndex < 0) {
-          mergedData.reports.unshift(locRep);
-        } else {
-          const locTime = new Date(locRep.updatedAt || locRep.createdAt || 0).getTime();
-          const srvTime = new Date(mergedData.reports[sIndex].updatedAt || mergedData.reports[sIndex].createdAt || 0).getTime();
-          if (locTime > srvTime) {
-            mergedData.reports[sIndex] = locRep;
-          }
-        }
-      }
-
-      for (const locMach of localData.machines || []) {
-        if (!mergedData.machines.some(m => m.id === locMach.id)) {
-          mergedData.machines.unshift(locMach);
-        }
-      }
-
-      for (const locCli of localData.clients || []) {
-        if (!mergedData.clients.some(c => c.id === locCli.id)) {
-          mergedData.clients.unshift(locCli);
-        }
-      }
-
-      if (localData.companySettings) {
-        mergedData.companySettings = {
-          ...mergedData.companySettings,
-          ...localData.companySettings
-        };
-      }
+    if (cleanData.companySettings) {
+      cleanData.companySettings.logoUrl = sanitizeLogoUrl(cleanData.companySettings.logoUrl);
     }
 
-    if (mergedData.companySettings) {
-      mergedData.companySettings.logoUrl = sanitizeLogoUrl(mergedData.companySettings.logoUrl);
-    }
-
-    saveToLocalCache(mergedData);
-    return mergedData;
+    // Update local cache so Phone B is always up-to-date with Phone A's server state
+    saveToLocalCache(cleanData);
+    return cleanData;
   } catch (err) {
     console.warn('Backend API offline or running in static Vercel mode. Using embedded data + cache:', err);
     
@@ -167,13 +128,9 @@ export async function fetchAppData(): Promise<AppStateData> {
     let fallback = localData;
     if (!fallback) {
       fallback = INITIAL_APP_DATA;
-    } else {
-      // Ensure all 26 machines exist in fallback
-      for (const m of INITIAL_APP_DATA.machines) {
-        if (!fallback.machines.some(existing => existing.id === m.id || existing.name === m.name)) {
-          fallback.machines.push(m);
-        }
-      }
+    }
+    if (fallback.machines && Array.isArray(fallback.machines)) {
+      fallback.machines = fallback.machines.filter(m => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'));
     }
 
     if (fallback.companySettings) {

@@ -22,7 +22,8 @@ import {
   Copy,
   CheckCircle2,
   RefreshCw,
-  Smartphone
+  Smartphone,
+  AlertCircle
 } from 'lucide-react';
 import { CompanySettings, Technician, Client, Machine, MaintenanceReport } from '../types';
 import { uploadPhotoFile, exportDataToJson, importDataFromJson } from '../services/api';
@@ -87,9 +88,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [importJsonText, setImportJsonText] = useState('');
   const [showImportBox, setShowImportBox] = useState(false);
   const [backupMsg, setBackupMsg] = useState('');
+  const [backupIsError, setBackupIsError] = useState(false);
+
+  const getLiveExportData = () => {
+    return JSON.stringify({
+      companySettings: companyForm,
+      technicians: techList,
+      assistants: auxList,
+      checklistTemplate: checkList,
+      clients,
+      machines,
+      reports: reports || []
+    }, null, 2);
+  };
 
   const handleDownloadBackup = () => {
-    const jsonStr = exportDataToJson();
+    const jsonStr = getLiveExportData();
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -97,28 +111,52 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     a.download = `kadu_manutencoes_dados_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    setBackupIsError(false);
     setBackupMsg('Arquivo de backup baixado com sucesso!');
-    setTimeout(() => setBackupMsg(''), 3500);
+    setTimeout(() => setBackupMsg(''), 4000);
   };
 
   const handleCopyBackup = () => {
-    const jsonStr = exportDataToJson();
+    const jsonStr = getLiveExportData();
     navigator.clipboard.writeText(jsonStr);
+    setBackupIsError(false);
     setBackupMsg('Dados copiados para a área de transferência!');
-    setTimeout(() => setBackupMsg(''), 3500);
+    setTimeout(() => setBackupMsg(''), 4000);
   };
 
-  const handleImportBackup = async () => {
-    if (!importJsonText.trim()) return;
+  const handleImportBackup = async (contentToImport?: string) => {
+    const raw = typeof contentToImport === 'string' ? contentToImport : importJsonText;
+    if (!raw.trim()) {
+      setBackupIsError(true);
+      setBackupMsg('Insira ou selecione um arquivo JSON válido.');
+      return;
+    }
     try {
-      await importDataFromJson(importJsonText);
+      await importDataFromJson(raw);
+      setBackupIsError(false);
       setBackupMsg('Dados importados com sucesso! Atualizando aplicativo...');
       setTimeout(() => {
         window.location.reload();
       }, 1000);
     } catch (e: any) {
-      alert(e.message || 'Erro ao importar dados');
+      setBackupIsError(true);
+      setBackupMsg(e.message || 'Erro ao importar dados. Verifique a formatação.');
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const content = event.target?.result as string;
+      if (content) {
+        setImportJsonText(content);
+        await handleImportBackup(content);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   // Synchronize internal state whenever props update
@@ -522,7 +560,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         )}
 
         {/* ============================================================== */}
-        {/* TAB 2: MÁQUINAS (INJETORAS PAVILHÃO 1, PAVILHÃO 2 E GERAL) */}
+        {/* TAB 2: MÁQUINAS (INJETORAS PRODUÇÃO 1, PRODUÇÃO 2 E GERAL) */}
         {/* ============================================================== */}
         {activeTab === 'maquinas' && (
           <MachinesView
@@ -934,8 +972,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
 
             {backupMsg && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-800 flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-600" />
+              <div className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 border ${
+                backupIsError
+                  ? 'bg-red-50 border-red-200 text-red-800'
+                  : 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              }`}>
+                {backupIsError ? (
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                ) : (
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                )}
                 <span>{backupMsg}</span>
               </div>
             )}
@@ -989,18 +1035,43 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </div>
 
               {!showImportBox ? (
-                <button
-                  type="button"
-                  onClick={() => setShowImportBox(true)}
-                  className="w-full text-center text-xs font-bold text-blue-900 hover:text-blue-800 underline pt-1 cursor-pointer"
-                >
-                  + Restaurar / Importar Dados neste Aparelho
-                </button>
+                <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
+                  <label className="w-full sm:flex-1 h-11 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold text-xs rounded-xl flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-colors">
+                    <Upload className="w-4 h-4 text-emerald-600" />
+                    <span>Carregar Arquivo .JSON do Aparelho</span>
+                    <input
+                      type="file"
+                      accept=".json,application/json"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowImportBox(true)}
+                    className="text-xs font-bold text-blue-900 hover:text-blue-800 underline py-2 cursor-pointer"
+                  >
+                    Ou colar texto JSON
+                  </button>
+                </div>
               ) : (
                 <div className="pt-2 space-y-2">
-                  <label className="block text-xs font-bold text-slate-700">
-                    Cole o conteúdo do backup JSON abaixo para restaurar:
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-slate-700">
+                      Cole o conteúdo do backup JSON abaixo ou selecione o arquivo:
+                    </label>
+                    <label className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Selecionar Arquivo</span>
+                      <input
+                        type="file"
+                        accept=".json,application/json"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
                   <textarea
                     rows={4}
                     value={importJsonText}
@@ -1011,7 +1082,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={handleImportBackup}
+                      onClick={() => handleImportBackup()}
                       className="flex-1 h-10 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
                     >
                       Confirmar Importação de Dados

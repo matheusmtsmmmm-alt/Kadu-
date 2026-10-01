@@ -125,4 +125,6 @@ export interface AppStateData {
   assistants: string[];
   checklistTemplate: Array<{ id: string; label: string; category?: string }>;
   companySettings: CompanySettings;
+  version?: number;
+  lastModified?: string;
 }

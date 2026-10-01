@@ -262,21 +262,31 @@ class RealtimeSyncService {
   }
 
   /**
-   * Lightweight version polling (only downloads a tiny 40-byte JSON)
-   * Ensures that even if WebSockets or SSE are blocked by firewalls or mobile NATs,
-   * Phone B will still detect Phone A's changes within 2.5 seconds!
+   * High-speed lightweight version check (~40 bytes)
+   * Runs every 1.2s so Phone B detects Phone A within ~1 second even if WebSocket is blocked
    */
   private startVersionPolling() {
     if (this.versionPollInterval) clearInterval(this.versionPollInterval);
 
     this.versionPollInterval = setInterval(() => {
-      if (document.visibilityState === 'visible' && navigator.onLine) {
+      if (navigator.onLine) {
         this.checkServerVersion();
       }
-    }, 2800);
+    }, 1200);
+
+    // Instant check when user taps or focuses on Phone B
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', () => this.checkServerVersion());
+      window.addEventListener('touchstart', () => {
+        if (Date.now() - (this.lastSyncedAt?.getTime() || 0) > 1000) {
+          this.checkServerVersion();
+        }
+      }, { passive: true });
+    }
   }
 
   private async checkServerVersion() {
+    if (typeof window === 'undefined' || !navigator.onLine) return;
     try {
       const res = await fetch('/api/sync/version', { cache: 'no-store' });
       if (res.ok) {
@@ -284,8 +294,17 @@ class RealtimeSyncService {
         if (info.clients) {
           this.connectedClients = Math.max(1, info.clients);
         }
-        if (info.version && info.version > this.currentVersion) {
-          // New version detected from another device (Phone A)! Fetch immediately
+
+        const serverVersion = typeof info.version === 'number' ? info.version : 0;
+
+        if (this.currentVersion === 0 && serverVersion > 0) {
+          // Initialize baseline version on first check
+          this.currentVersion = serverVersion;
+          this.lastSyncedAt = new Date();
+          this.updateStatus('connected', this.currentMode === 'offline' ? 'polling' : this.currentMode);
+        } else if (serverVersion > this.currentVersion) {
+          // Phone A modified something! Fetch and update Phone B immediately
+          this.currentVersion = serverVersion;
           await this.forceSync();
         } else {
           this.lastSyncedAt = new Date();
@@ -305,11 +324,13 @@ class RealtimeSyncService {
    * Handles incoming data from WebSocket, SSE, or Polling
    */
   private handleIncomingData(data: AppStateData, version: number, source: string) {
-    if (version <= this.currentVersion && this.currentVersion !== 0) {
-      return; // Already up-to-date
+    if (version > 0 && this.currentVersion > 0 && version < this.currentVersion) {
+      return; // Stale packet, ignore
     }
 
-    this.currentVersion = version;
+    if (version > 0) {
+      this.currentVersion = Math.max(this.currentVersion, version);
+    }
     this.lastSyncedAt = new Date();
 
     // Sanitize logoUrl to prevent broken assets
@@ -320,7 +341,7 @@ class RealtimeSyncService {
     // Persist to local cache so phone stays instant offline
     setLocalCache(data);
 
-    // Notify all UI components
+    // Notify all UI components on Phone B
     this.dataListeners.forEach((listener) => {
       try {
         listener(data);
@@ -335,7 +356,7 @@ class RealtimeSyncService {
         this.broadcastChannel.postMessage({
           type: 'DATA_UPDATE',
           data,
-          version
+          version: this.currentVersion
         });
       } catch (err) {
         // ignore
@@ -349,7 +370,7 @@ class RealtimeSyncService {
    * Broadcast a local mutation from this device (Phone A) to other tabs immediately
    */
   public broadcastLocalChange(data: AppStateData) {
-    this.currentVersion = Date.now();
+    this.currentVersion = typeof data.version === 'number' ? data.version : (this.currentVersion + 1);
     this.lastSyncedAt = new Date();
     setLocalCache(data);
 
@@ -383,7 +404,8 @@ class RealtimeSyncService {
     try {
       const data = await fetchAppData();
       if (data) {
-        this.handleIncomingData(data, Date.now(), 'force_sync');
+        const v = typeof data.version === 'number' ? data.version : this.currentVersion;
+        this.handleIncomingData(data, v, 'force_sync');
         return data;
       }
     } catch (err) {

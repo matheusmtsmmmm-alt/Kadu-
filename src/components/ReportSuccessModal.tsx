@@ -8,7 +8,8 @@ import {
   Home, 
   X,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Eye
 } from 'lucide-react';
 import { MaintenanceReport, CompanySettings } from '../types';
 import { downloadReportPdf, shareReportPdf } from '../services/pdfGenerator';
@@ -64,7 +65,13 @@ export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
     }
     const encoded = encodeURIComponent(whatsappText);
     const waUrl = `https://api.whatsapp.com/send?text=${encoded}`;
-    window.location.href = waUrl;
+    const a = document.createElement('a');
+    a.href = waUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     setShowWhatsappModal(false);
   };
 
@@ -72,7 +79,11 @@ export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
     // Download PDF so the technician has the file ready to attach
     await downloadReportPdf(report, settings);
     const mailto = `mailto:${encodeURIComponent(emailTo)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-    window.location.href = mailto;
+    const a = document.createElement('a');
+    a.href = mailto;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     setShowEmailModal(false);
   };
 
@@ -97,6 +108,18 @@ export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
 
         {/* Action Buttons */}
         <div className="space-y-3">
+          {/* Visualizar PDF na Tela */}
+          {onViewPdf && (
+            <button
+              type="button"
+              onClick={onViewPdf}
+              className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-base rounded-2xl flex items-center justify-center gap-3 shadow-md shadow-slate-950/20 active:scale-[0.98] transition-all cursor-pointer"
+            >
+              <Eye className="w-5 h-5 text-blue-300" />
+              <span>VISUALIZAR PDF NA TELA</span>
+            </button>
+          )}
+
           {/* 1. Baixar PDF */}
           <button
             type="button"

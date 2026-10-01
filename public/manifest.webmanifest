@@ -1,0 +1,32 @@
+{
+  "id": "/",
+  "name": "Kadu Manutenções",
+  "short_name": "KaduManut",
+  "description": "Sistema Técnico de Gestão de Ordens de Serviço e Manutenção Industrial",
+  "theme_color": "#0b192c",
+  "background_color": "#0b192c",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

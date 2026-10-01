@@ -105,7 +105,7 @@ export const MachineBadge: React.FC<MachineBadgeProps> = ({
       >
         <div className="flex items-center gap-1 opacity-90 mb-0.5">
           <span className="text-[9px] font-black uppercase tracking-widest px-1 py-0.2 rounded bg-black/25">
-            {isP2 ? 'PAVILHÃO 2' : 'PAVILHÃO 1'}
+            {isP2 ? 'PRODUÇÃO 2' : 'PRODUÇÃO 1'}
           </span>
         </div>
         <span className="text-3xl sm:text-4xl font-black tracking-tight leading-none font-mono drop-shadow-sm">

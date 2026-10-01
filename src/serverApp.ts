@@ -61,32 +61,37 @@ export function readDb() {
         parsed.companySettings.logoUrl = INITIAL_APP_DATA.companySettings.logoUrl;
       }
     }
-    // Safety check: ensure all 26 default machines exist
     if (parsed.machines && Array.isArray(parsed.machines)) {
-      for (const m of INITIAL_APP_DATA.machines) {
-        if (!parsed.machines.some((existing: any) => existing.id === m.id || existing.name === m.name)) {
-          parsed.machines.push(m);
-        }
-      }
+      // Clean out any outdated compressor maq_3 if present
+      parsed.machines = parsed.machines.filter((m: any) => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'));
     } else {
       parsed.machines = INITIAL_APP_DATA.machines;
+    }
+    if (!parsed.version) {
+      parsed.version = 1;
     }
     memoryDb = parsed;
     return parsed;
   } catch (err) {
+    if (!memoryDb.version) memoryDb.version = 1;
     return memoryDb || INITIAL_APP_DATA;
   }
 }
 
-import { broadcastDataUpdate, registerSseClient, getCurrentVersion, getConnectedClientsCount } from './serverSync';
+import { broadcastDataUpdate, registerSseClient, getCurrentVersion, getConnectedClientsCount, setCurrentVersion } from './serverSync';
 
 export function writeDb(data: any) {
+  // Monotonically increasing version on every mutation
+  data.version = (typeof data.version === 'number' ? data.version : 0) + 1;
+  data.lastModified = new Date().toISOString();
   memoryDb = data;
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
   } catch (err) {
     // If running in serverless where disk is read-only, memoryDb still holds the changes
   }
+  // Keep serverSync in sync with latest version
+  setCurrentVersion(data.version);
   // Immediately broadcast change to all connected devices in real time
   broadcastDataUpdate(data);
 }
@@ -118,6 +123,15 @@ export function createExpressApp() {
 
   const router = express.Router();
 
+  router.get('/', (req, res) => {
+    res.json({
+      status: 'online',
+      environment: isVercel ? 'vercel' : 'node',
+      timestamp: new Date().toISOString(),
+      appName: 'Kadu Manutenções API'
+    });
+  });
+
   router.get('/status', (req, res) => {
     res.json({
       status: 'online',
@@ -129,8 +143,11 @@ export function createExpressApp() {
 
   // Real-time synchronization state & version check
   router.get('/sync/version', (req, res) => {
+    const db = readDb();
+    const version = typeof db.version === 'number' ? db.version : getCurrentVersion();
     res.json({
-      version: getCurrentVersion(),
+      version,
+      lastModified: db.lastModified || new Date().toISOString(),
       clients: getConnectedClientsCount(),
       timestamp: new Date().toISOString()
     });
@@ -151,6 +168,9 @@ export function createExpressApp() {
 
   router.get('/data', (req, res) => {
     const data = readDb();
+    if (!data.version) {
+      data.version = getCurrentVersion();
+    }
     res.json(data);
   });
 
@@ -305,9 +325,8 @@ export function createExpressApp() {
     }
   });
 
-  // Mount router on both /api and / to handle all routing scenarios smoothly
+  // Mount API router strictly on /api
   app.use('/api', router);
-  app.use('/', router);
 
   return app;
 }

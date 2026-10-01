@@ -68,6 +68,9 @@ export const NewReportWizard: React.FC<NewReportWizardProps> = ({
   const [quickPavilhao, setQuickPavilhao] = useState<'P1' | 'P2' | 'TODAS'>('P1');
   const [selectedChecklistCategory, setSelectedChecklistCategory] = useState<'TODOS' | 'Hidráulica' | 'Mecânica' | 'Elétrica' | 'Segurança'>('TODOS');
 
+  const p1Count = existingMachines.filter(m => m.pavilhao === 'P1' || m.location?.includes('P1')).length;
+  const p2Count = existingMachines.filter(m => m.pavilhao === 'P2' || m.location?.includes('P2')).length;
+
   // Use official 27 injection molding checklist items as baseline or default
   const baseTemplate = (checklistTemplate && checklistTemplate.length >= 20)
     ? checklistTemplate
@@ -283,7 +286,7 @@ export const NewReportWizard: React.FC<NewReportWizardProps> = ({
                   </span>
                 </div>
 
-                {/* Pavilion tabs */}
+                {/* Production tabs */}
                 <div className="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-xl">
                   <button
                     type="button"
@@ -294,11 +297,11 @@ export const NewReportWizard: React.FC<NewReportWizardProps> = ({
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    <span>Pavilhão 1 (P1)</span>
+                    <span>Produção 1 (P1)</span>
                     <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
                       quickPavilhao === 'P1' ? 'bg-blue-800 text-white' : 'bg-slate-200 text-slate-700'
                     }`}>
-                      1 a 13
+                      {p1Count} maq
                     </span>
                   </button>
 
@@ -311,11 +314,11 @@ export const NewReportWizard: React.FC<NewReportWizardProps> = ({
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    <span>Pavilhão 2 (P2)</span>
+                    <span>Produção 2 (P2)</span>
                     <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
                       quickPavilhao === 'P2' ? 'bg-blue-800 text-white' : 'bg-slate-200 text-slate-700'
                     }`}>
-                      A até O
+                      {p2Count} maq
                     </span>
                   </button>
 
@@ -487,7 +490,7 @@ export const NewReportWizard: React.FC<NewReportWizardProps> = ({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Pavilhão
+                    Produção
                   </label>
                   <select
                     value={reportData.machine.pavilhao || (reportData.machine.location?.includes('P2') ? 'P2' : 'P1')}
@@ -498,14 +501,14 @@ export const NewReportWizard: React.FC<NewReportWizardProps> = ({
                         machine: {
                           ...prev.machine,
                           pavilhao: pav,
-                          location: pav === 'P1' ? 'Pavilhão 1 (P1)' : pav === 'P2' ? 'Pavilhão 2 (P2)' : prev.machine.location
+                          location: pav === 'P1' ? 'Produção 1 (P1)' : pav === 'P2' ? 'Produção 2 (P2)' : prev.machine.location
                         }
                       }));
                     }}
                     className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-colors"
                   >
-                    <option value="P1">Pavilhão 1 (P1 - 01 a 13)</option>
-                    <option value="P2">Pavilhão 2 (P2 - A até O)</option>
+                    <option value="P1">Produção 1 (P1 - 01 a 13)</option>
+                    <option value="P2">Produção 2 (P2 - A até O)</option>
                     <option value="Geral">Geral / Outro</option>
                   </select>
                 </div>
@@ -556,7 +559,7 @@ export const NewReportWizard: React.FC<NewReportWizardProps> = ({
                     ...prev,
                     machine: { ...prev.machine, location: e.target.value }
                   }))}
-                  placeholder="Ex: Pavilhão 1 (P1)"
+                  placeholder="Ex: Produção 1 (P1)"
                   className="w-full h-11 px-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-colors"
                 />
               </div>

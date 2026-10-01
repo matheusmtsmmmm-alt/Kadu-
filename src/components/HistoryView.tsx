@@ -90,7 +90,13 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
   const handleSendWhatsapp = () => {
     const encoded = encodeURIComponent(whatsappText);
     const waUrl = `https://api.whatsapp.com/send?text=${encoded}`;
-    window.location.href = waUrl;
+    const a = document.createElement('a');
+    a.href = waUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     setWhatsappReport(null);
   };
 
@@ -109,7 +115,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
       await downloadReportPdf(emailReport, settings);
     }
     const mailto = `mailto:${encodeURIComponent(emailTo)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-    window.location.href = mailto;
+    const a = document.createElement('a');
+    a.href = mailto;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     setEmailReport(null);
   };
 

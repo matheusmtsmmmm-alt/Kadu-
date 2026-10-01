@@ -2,6 +2,32 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (function() {
+        var _err = console.error;
+        var _warn = console.warn;
+        console.error = function() {
+          var msg = arguments[0];
+          if (typeof msg === 'string' && (msg.indexOf('[vite]') !== -1 || msg.indexOf('websocket') !== -1 || msg.indexOf('WebSocket') !== -1)) {
+            return;
+          }
+          _err.apply(console, arguments);
+        };
+        console.warn = function() {
+          var msg = arguments[0];
+          if (typeof msg === 'string' && (msg.indexOf('[vite]') !== -1 || msg.indexOf('websocket') !== -1 || msg.indexOf('WebSocket') !== -1)) {
+            return;
+          }
+          _warn.apply(console, arguments);
+        };
+        window.addEventListener('error', function(e) {
+          if (e && e.message && (e.message.indexOf('[vite]') !== -1 || e.message.indexOf('WebSocket') !== -1 || e.message.indexOf('websocket') !== -1)) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+          }
+        }, true);
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Kadu Manutenções</title>
     <meta name="description" content="Aplicativo móvel e online para gestão de manutenção técnica, ordens de serviço e relatórios profissionais com fotos em PDF." />
@@ -14,6 +40,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="KaduManut" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="icon" type="image/jpeg" href="/logo.jpg" />
@@ -24,6 +51,13 @@
   <body class="bg-slate-100 text-slate-900 antialiased selection:bg-blue-600 selection:text-white min-h-screen">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').catch(function() {});
+        });
+      }
+    </script>
   </body>
 </html>
 

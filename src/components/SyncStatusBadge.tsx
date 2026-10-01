@@ -52,22 +52,22 @@ export const SyncStatusBadge: React.FC<SyncStatusBadgeProps> = ({
   return (
     <>
       {/* 
-        Fixed-width, calm, non-jittering button!
+        Compact, sleek, calm, non-jittering button!
         NO animate-pulse, NO text length toggles that shake the layout.
       */}
       <button
         type="button"
         onClick={() => setIsOpen(true)}
         title="Status da sincronização em tempo real entre celulares"
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700/80 text-white text-xs font-semibold transition-all shadow-xs select-none touch-manipulation cursor-pointer"
+        className="flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700/80 text-white text-[10px] font-bold transition-all shadow-xs select-none touch-manipulation cursor-pointer shrink-0"
       >
         {/* Solid calm status indicator dot */}
-        <span className="relative flex h-2 w-2 items-center justify-center">
+        <span className="relative flex h-1.5 w-1.5 items-center justify-center shrink-0">
           {isConnected && (
             <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
           )}
           <span 
-            className={`relative inline-flex rounded-full h-2 w-2 ${
+            className={`relative inline-flex rounded-full h-1.5 w-1.5 ${
               isOffline
                 ? 'bg-rose-500'
                 : isSyncing || manualSyncing
@@ -78,17 +78,17 @@ export const SyncStatusBadge: React.FC<SyncStatusBadgeProps> = ({
         </span>
 
         {/* Stable text that never resizes or causes layout shifts */}
-        <span className="tracking-tight text-[11px] font-bold text-slate-200">
+        <span className="tracking-tight text-[10px] font-bold text-slate-200 whitespace-nowrap">
           {isOffline ? 'Offline' : 'Tempo Real'}
         </span>
 
         {/* Subtle icon */}
         {isSyncing || manualSyncing ? (
-          <RefreshCw className="w-3 h-3 text-amber-400 animate-spin" />
+          <RefreshCw className="w-2.5 h-2.5 text-amber-400 animate-spin shrink-0" />
         ) : isOffline ? (
-          <WifiOff className="w-3 h-3 text-rose-400" />
+          <WifiOff className="w-2.5 h-2.5 text-rose-400 shrink-0" />
         ) : (
-          <Zap className="w-3 h-3 text-emerald-400" />
+          <Zap className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
         )}
       </button>
 

@@ -24,7 +24,7 @@ export const INITIAL_APP_DATA: AppStateData = {
         pavilhao: "P1",
         tag: "INJ. 01",
         manufacturer: "Starmach",
-        location: "Pavilhão 1 (P1)",
+        location: "Produção 1 (P1)",
         clientName: "Kadu Manutenções",
         horometer: "0h"
       },
@@ -88,7 +88,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 01",
       manufacturer: "Starmach",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -100,7 +100,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 02",
       manufacturer: "Mingplast",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -112,7 +112,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 03",
       manufacturer: "Mingplast",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -124,7 +124,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 04",
       manufacturer: "Chen Hsong",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -136,7 +136,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 05",
       manufacturer: "Tianjian",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -148,7 +148,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 06",
       manufacturer: "Tianjian",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -160,7 +160,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 07",
       manufacturer: "Tianjian",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -172,7 +172,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 08",
       manufacturer: "Tederic",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -184,7 +184,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 09",
       manufacturer: "Haitian",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -196,7 +196,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 10",
       manufacturer: "Haitian",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -208,7 +208,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 11",
       manufacturer: "Haitian",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -220,7 +220,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 12",
       manufacturer: "Haitian",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -232,7 +232,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P1",
       tag: "INJ. 13",
       manufacturer: "LK Machinery",
-      location: "Pavilhão 1 (P1)",
+      location: "Produção 1 (P1)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -244,7 +244,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. A",
       manufacturer: "Sinitron",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -256,7 +256,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. B",
       manufacturer: "Tianjian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -268,7 +268,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. C",
       manufacturer: "Haitian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -280,7 +280,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. D",
       manufacturer: "Haitian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -292,7 +292,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. E",
       manufacturer: "Haitian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -304,7 +304,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. F",
       manufacturer: "Haitian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -316,7 +316,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. G",
       manufacturer: "Haitian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -328,7 +328,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. H",
       manufacturer: "Haitian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -340,7 +340,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. I",
       manufacturer: "Haitian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -352,7 +352,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. J",
       manufacturer: "Tianjian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -364,7 +364,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. L",
       manufacturer: "Haitian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -376,7 +376,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. M",
       manufacturer: "Haitian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -388,7 +388,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. N",
       manufacturer: "Haitian",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
     },
@@ -400,20 +400,9 @@ export const INITIAL_APP_DATA: AppStateData = {
       pavilhao: "P2",
       tag: "INJ. O",
       manufacturer: "Borche",
-      location: "Pavilhão 2 (P2)",
+      location: "Produção 2 (P2)",
       clientName: "Kadu Manutenções",
       horometer: "0h"
-    },
-    {
-      id: "maq_3",
-      name: "Compressor de Parafuso 50HP",
-      model: "GA 37 VSD+",
-      serialNumber: "CP-7740-99",
-      tag: "MQ-03",
-      clientName: "Embalagens Brasil Sul",
-      horometer: "6.940h",
-      location: "Sala de Compressores",
-      manufacturer: "Atlas Copco"
     }
   ],
   clients: [

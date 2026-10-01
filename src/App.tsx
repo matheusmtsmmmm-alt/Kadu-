@@ -178,8 +178,9 @@ export default function App() {
     const res = await saveReport(newReport);
     if (res.success && res.report) {
       if (data) {
+        const nextVersion = (data.version || 0) + 1;
         const updatedReports = [res.report, ...data.reports.filter(r => r.id !== res.report.id)];
-        const updatedData = { ...data, reports: updatedReports };
+        const updatedData = { ...data, reports: updatedReports, version: nextVersion };
         setData(updatedData);
         realtimeSync.broadcastLocalChange(updatedData);
       }
@@ -191,8 +192,9 @@ export default function App() {
   const handleDeleteReport = async (id: string) => {
     await deleteReport(id);
     if (data) {
+      const nextVersion = (data.version || 0) + 1;
       const updatedReports = data.reports.filter(r => r.id !== id);
-      const updatedData = { ...data, reports: updatedReports };
+      const updatedData = { ...data, reports: updatedReports, version: nextVersion };
       setData(updatedData);
       realtimeSync.broadcastLocalChange(updatedData);
     }
@@ -202,11 +204,12 @@ export default function App() {
   const handleSaveMachine = async (mach: Partial<Machine>) => {
     const res = await saveMachine(mach);
     if (res.success && res.machine && data) {
+      const nextVersion = (data.version || 0) + 1;
       const idx = data.machines.findIndex(m => m.id === res.machine.id);
       const newMachines = [...data.machines];
       if (idx >= 0) newMachines[idx] = res.machine;
       else newMachines.unshift(res.machine);
-      const updatedData = { ...data, machines: newMachines };
+      const updatedData = { ...data, machines: newMachines, version: nextVersion };
       setData(updatedData);
       realtimeSync.broadcastLocalChange(updatedData);
     }
@@ -215,8 +218,9 @@ export default function App() {
   const handleDeleteMachine = async (id: string) => {
     await deleteMachine(id);
     if (data) {
+      const nextVersion = (data.version || 0) + 1;
       const updatedMachines = data.machines.filter(m => m.id !== id);
-      const updatedData = { ...data, machines: updatedMachines };
+      const updatedData = { ...data, machines: updatedMachines, version: nextVersion };
       setData(updatedData);
       realtimeSync.broadcastLocalChange(updatedData);
     }
@@ -226,11 +230,12 @@ export default function App() {
   const handleSaveClient = async (cli: Partial<Client>) => {
     const res = await saveClient(cli);
     if (res.success && res.client && data) {
+      const nextVersion = (data.version || 0) + 1;
       const idx = data.clients.findIndex(c => c.id === res.client.id);
       const newClients = [...data.clients];
       if (idx >= 0) newClients[idx] = res.client;
       else newClients.unshift(res.client);
-      const updatedData = { ...data, clients: newClients };
+      const updatedData = { ...data, clients: newClients, version: nextVersion };
       setData(updatedData);
       realtimeSync.broadcastLocalChange(updatedData);
     }
@@ -239,8 +244,9 @@ export default function App() {
   const handleDeleteClient = async (id: string) => {
     await deleteClient(id);
     if (data) {
+      const nextVersion = (data.version || 0) + 1;
       const updatedClients = data.clients.filter(c => c.id !== id);
-      const updatedData = { ...data, clients: updatedClients };
+      const updatedData = { ...data, clients: updatedClients, version: nextVersion };
       setData(updatedData);
       realtimeSync.broadcastLocalChange(updatedData);
     }
@@ -293,34 +299,36 @@ export default function App() {
       {activeView === 'home' && (
         <main className="flex-1 flex flex-col">
           {/* Top Brand Header */}
-          <header className="bg-slate-900 text-white pt-5 pb-7 px-4 sm:px-6 shadow-md border-b border-slate-800">
+          <header className="bg-slate-900 text-white pt-4 pb-6 px-3.5 sm:px-6 shadow-md border-b border-slate-800">
             <div className="max-w-xl mx-auto">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between gap-2.5">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <img
                     src={company.logoUrl || DEFAULT_LOGO_BASE64}
                     alt="Logo"
-                    className="w-11 h-11 rounded-xl object-contain bg-white/10 p-1 border border-white/20"
+                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-contain bg-white/10 p-1.5 border border-white/20 shadow-xs shrink-0"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = DEFAULT_LOGO_BASE64;
                     }}
                   />
-                  <div>
-                    <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-none text-white">
-                      KADU MANUTENÇÕES
+                  <div className="min-w-0 flex-1">
+                    <h1 className="text-lg sm:text-xl font-black tracking-tight leading-tight text-white whitespace-nowrap truncate">
+                      {company.companyName || 'KADU MANUTENÇÕES'}
                     </h1>
-                    <p className="text-[11px] text-slate-300 font-medium tracking-wide mt-1">
+                    <p className="text-[11px] sm:text-xs text-slate-300 font-medium tracking-wide mt-0.5 whitespace-nowrap truncate">
                       Sistema Técnico de Relatórios de Campo
                     </p>
                   </div>
                 </div>
 
-                {/* Multi-device real-time sync badge - calm, stable, non-flickering */}
-                <SyncStatusBadge
-                  status={syncStatus}
-                  isSyncing={isSyncing}
-                  onForceSync={handleForceSync}
-                />
+                {/* Multi-device real-time sync badge - calm, compact, non-flickering */}
+                <div className="shrink-0">
+                  <SyncStatusBadge
+                    status={syncStatus}
+                    isSyncing={isSyncing}
+                    onForceSync={handleForceSync}
+                  />
+                </div>
               </div>
             </div>
           </header>

@@ -9,12 +9,12 @@ export const INITIAL_APP_DATA: AppStateData = {
       date: "2026-09-27",
       status: "Finalizado",
       client: {
-        id: "cli_1",
-        name: "Indústria Metalúrgica Alvorada",
-        document: "12.345.678/0001-90",
-        phone: "(11) 98765-4321",
-        address: "Rua das Indústrias, 450 - Galpão 3",
-        contactPerson: "Eng. Marcos Rocha"
+        id: "cli_oppeano",
+        name: "Oppeano",
+        document: "",
+        phone: "",
+        address: "Parque Fabril Oppeano",
+        contactPerson: "Gerência de Produção"
       },
       machine: {
         id: "maq_p1_01",
@@ -25,7 +25,7 @@ export const INITIAL_APP_DATA: AppStateData = {
         tag: "INJ. 01",
         manufacturer: "Starmach",
         location: "Produção 1 (P1)",
-        clientName: "Kadu Manutenções",
+        clientName: "Oppeano",
         horometer: "0h"
       },
       technician: {
@@ -89,7 +89,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 01",
       manufacturer: "Starmach",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -101,7 +101,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 02",
       manufacturer: "Mingplast",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -113,7 +113,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 03",
       manufacturer: "Mingplast",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -125,7 +125,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 04",
       manufacturer: "Chen Hsong",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -137,7 +137,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 05",
       manufacturer: "Tianjian",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -149,7 +149,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 06",
       manufacturer: "Tianjian",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -161,7 +161,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 07",
       manufacturer: "Tianjian",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -173,7 +173,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 08",
       manufacturer: "Tederic",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -185,7 +185,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 09",
       manufacturer: "Haitian",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -197,7 +197,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 10",
       manufacturer: "Haitian",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -209,7 +209,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 11",
       manufacturer: "Haitian",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -221,7 +221,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 12",
       manufacturer: "Haitian",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -233,7 +233,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. 13",
       manufacturer: "LK Machinery",
       location: "Produção 1 (P1)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -245,7 +245,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. A",
       manufacturer: "Sinitron",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -257,7 +257,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. B",
       manufacturer: "Tianjian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -269,7 +269,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. C",
       manufacturer: "Haitian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -281,7 +281,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. D",
       manufacturer: "Haitian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -293,7 +293,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. E",
       manufacturer: "Haitian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -305,7 +305,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. F",
       manufacturer: "Haitian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -317,7 +317,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. G",
       manufacturer: "Haitian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -329,7 +329,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. H",
       manufacturer: "Haitian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -341,7 +341,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. I",
       manufacturer: "Haitian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -353,7 +353,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. J",
       manufacturer: "Tianjian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -365,7 +365,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. L",
       manufacturer: "Haitian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -377,7 +377,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. M",
       manufacturer: "Haitian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -389,7 +389,7 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. N",
       manufacturer: "Haitian",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     },
     {
@@ -401,34 +401,18 @@ export const INITIAL_APP_DATA: AppStateData = {
       tag: "INJ. O",
       manufacturer: "Borche",
       location: "Produção 2 (P2)",
-      clientName: "Kadu Manutenções",
+      clientName: "Oppeano",
       horometer: "0h"
     }
   ],
   clients: [
     {
-      id: "cli_1",
-      name: "Indústria Metalúrgica Alvorada",
-      document: "12.345.678/0001-90",
-      phone: "(11) 98765-4321",
-      address: "Rua das Indústrias, 450 - Galpão 3",
-      contactPerson: "Eng. Marcos Rocha"
-    },
-    {
-      id: "cli_2",
-      name: "Usinagem Precisão Total",
-      document: "23.456.789/0001-12",
-      phone: "(11) 97654-3210",
-      address: "Av. do Contorno, 800 - Distrito Industrial",
-      contactPerson: "Sérgio Toledo"
-    },
-    {
-      id: "cli_3",
-      name: "Embalagens Brasil Sul",
-      document: "34.567.890/0001-23",
-      phone: "(11) 96543-2109",
-      address: "Rodovia BR-116, Km 42 - Galpão B",
-      contactPerson: "Dra. Patrícia Lima"
+      id: "cli_oppeano",
+      name: "Oppeano",
+      document: "",
+      phone: "",
+      address: "Parque Fabril Oppeano",
+      contactPerson: "Gerência de Produção"
     }
   ],
   technicians: [

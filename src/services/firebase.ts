@@ -280,6 +280,7 @@ export async function saveSettingsToFirestore(payload: {
   companySettings?: CompanySettings;
   checklistTemplate?: any[];
   assistants?: string[];
+  technicians?: Technician[];
 }): Promise<void> {
   const path = 'settings/company';
   try {
@@ -287,6 +288,12 @@ export async function saveSettingsToFirestore(payload: {
       ...payload,
       updatedAt: new Date().toISOString()
     }, { merge: true });
+
+    if (payload.technicians && payload.technicians.length > 0) {
+      for (const t of payload.technicians) {
+        await setDoc(doc(db, 'technicians', t.id), t);
+      }
+    }
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, path);
     throw err;

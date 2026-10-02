@@ -417,35 +417,27 @@ export async function generateReportPdf(report: MaintenanceReport, settings: Com
     currentY = (doc as any).lastAutoTable.finalY + 6;
   }
 
-  // --- 7. OBSERVACÕES E RECOMENDAÇÕES ---
-  if (report.observations || report.futureRecommendations) {
+  // --- 7. OBSERVACÕES TÉCNICAS ---
+  if (report.observations && report.observations.trim()) {
     checkAddPage(28);
     doc.setFillColor(secondaryBlue[0], secondaryBlue[1], secondaryBlue[2]);
     doc.rect(margin, currentY, contentWidth, 6.5, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
-    doc.text('5. OBSERVAÇÕES E RECOMENDAÇÕES TÉCNICAS', margin + 4, currentY + 4.8);
+    doc.text('5. OBSERVAÇÕES TÉCNICAS', margin + 4, currentY + 4.8);
     currentY += 6.5;
 
-    let obsCombined = '';
-    if (report.observations) {
-      obsCombined += `Observações Gerais: ${report.observations}\n`;
-    }
-    if (report.futureRecommendations) {
-      obsCombined += `Recomendações Futuras / Preventivas: ${report.futureRecommendations}`;
-    }
-
-    const obsLines = doc.splitTextToSize(obsCombined, contentWidth - 8);
+    const obsLines = doc.splitTextToSize(report.observations, contentWidth - 8);
     const obsHeight = Math.max(14, obsLines.length * 4.5 + 6);
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
     doc.rect(margin, currentY, contentWidth, obsHeight, 'FD');
     doc.setTextColor(30, 41, 59);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text(obsLines, margin + 4, currentY + 5);
-    currentY += obsHeight + 6;
+    doc.setFontSize(8.5);
+    doc.text(obsLines, margin + 4, currentY + 5.5);
+    currentY += obsHeight + 4;
   }
 
   // --- 8. FOTOS NO PDF (FOTOS ANTES & FOTOS DEPOIS) ---
@@ -544,7 +536,7 @@ export async function generateReportPdf(report: MaintenanceReport, settings: Com
   await renderPhotoSection('6. REGISTRO FOTOGRÁFICO — ANTES DA MANUTENÇÃO', loadedBeforePhotos);
   await renderPhotoSection('7. REGISTRO FOTOGRÁFICO — DEPOIS DA MANUTENÇÃO', loadedAfterPhotos);
 
-  // --- 9. ASSINATURAS DIGITAIS ---
+  // --- 9. ASSINATURA DO TÉCNICO RESPONSÁVEL ---
   checkAddPage(48);
 
   doc.setFillColor(secondaryBlue[0], secondaryBlue[1], secondaryBlue[2]);
@@ -552,62 +544,37 @@ export async function generateReportPdf(report: MaintenanceReport, settings: Com
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.text('8. TERMO DE CONFORMIDADE E ASSINATURAS', margin + 4, currentY + 4.8);
+  doc.text('8. TERMO DE CONFORMIDADE E ASSINATURA DO TÉCNICO', margin + 4, currentY + 4.8);
   currentY += 8;
 
-  const sigBoxW = (contentWidth - 6) / 2;
+  const sigBoxW = 120;
   const sigBoxH = 34;
+  const sigBoxX = margin + (contentWidth - sigBoxW) / 2;
 
-  // Box Técnico
+  // Box Técnico (Centralizado)
   doc.setFillColor(lightBg[0], lightBg[1], lightBg[2]);
   doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-  doc.roundedRect(margin, currentY, sigBoxW, sigBoxH, 1.5, 1.5, 'FD');
+  doc.roundedRect(sigBoxX, currentY, sigBoxW, sigBoxH, 1.5, 1.5, 'FD');
 
   if (techSigBase64) {
     try {
-      doc.addImage(techSigBase64, 'PNG', margin + (sigBoxW - 40) / 2, currentY + 3, 40, 16);
+      doc.addImage(techSigBase64, 'PNG', sigBoxX + (sigBoxW - 46) / 2, currentY + 3, 46, 16);
     } catch {
       // ignore
     }
   }
 
   doc.setDrawColor(148, 163, 184);
-  doc.line(margin + 10, currentY + 22, margin + sigBoxW - 10, currentY + 22);
+  doc.line(sigBoxX + 12, currentY + 22, sigBoxX + sigBoxW - 12, currentY + 22);
 
   doc.setTextColor(15, 23, 42);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.text(report.signatures.technician.name || report.technician.name || 'Carlos Eduardo (Kadu)', margin + sigBoxW / 2, currentY + 26, { align: 'center' });
+  doc.setFontSize(8.5);
+  doc.text(report.signatures?.technician?.name || report.technician?.name || 'Carlos Eduardo (Kadu)', sigBoxX + sigBoxW / 2, currentY + 26, { align: 'center' });
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
+  doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
-  doc.text(`Técnico Responsável  •  ${report.signatures.technician.date || report.date}`, margin + sigBoxW / 2, currentY + 30, { align: 'center' });
-
-  // Box Cliente
-  const cSigX = margin + sigBoxW + 6;
-  doc.setFillColor(lightBg[0], lightBg[1], lightBg[2]);
-  doc.roundedRect(cSigX, currentY, sigBoxW, sigBoxH, 1.5, 1.5, 'FD');
-
-  if (clientSigBase64) {
-    try {
-      doc.addImage(clientSigBase64, 'PNG', cSigX + (sigBoxW - 40) / 2, currentY + 3, 40, 16);
-    } catch {
-      // ignore
-    }
-  }
-
-  doc.setDrawColor(148, 163, 184);
-  doc.line(cSigX + 10, currentY + 22, cSigX + sigBoxW - 10, currentY + 22);
-
-  doc.setTextColor(15, 23, 42);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.text(report.signatures.clientResponsible.name || report.client.contactPerson || 'Responsável pelo Cliente', cSigX + sigBoxW / 2, currentY + 26, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(100, 116, 139);
-  const cliDoc = report.signatures.clientResponsible.document ? ` (${report.signatures.clientResponsible.document})` : '';
-  doc.text(`Cliente Aprovador${cliDoc}  •  ${report.signatures.clientResponsible.date || report.date}`, cSigX + sigBoxW / 2, currentY + 30, { align: 'center' });
+  doc.text(`Técnico Responsável  •  ${report.signatures?.technician?.date || report.date}`, sigBoxX + sigBoxW / 2, currentY + 30, { align: 'center' });
 
   currentY += sigBoxH + 6;
 

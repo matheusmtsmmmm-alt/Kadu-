@@ -22,15 +22,14 @@ interface HistoryViewProps {
   reports: MaintenanceReport[];
   settings: CompanySettings;
   onBack: () => void;
-  onViewPdf: (report: MaintenanceReport) => void;
   onDeleteReport: (id: string) => Promise<void>;
+  onViewPdf?: (report: MaintenanceReport) => void;
 }
 
 export const HistoryView: React.FC<HistoryViewProps> = ({
   reports,
   settings,
   onBack,
-  onViewPdf,
   onDeleteReport
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -333,23 +332,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
             <div className="space-y-2.5">
               <button
                 type="button"
-                onClick={() => {
-                  onViewPdf(selectedReport);
-                  setSelectedReport(null);
-                }}
-                className="w-full h-13 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs active:scale-[0.98] transition-all"
-              >
-                <Eye className="w-5 h-5 text-blue-200" />
-                <span>VISUALIZAR PDF</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={() => handleDownload(selectedReport)}
                 disabled={actionLoading}
-                className="w-full h-13 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs active:scale-[0.98] transition-all"
+                className="w-full h-13 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs active:scale-[0.98] transition-all cursor-pointer"
               >
-                <Download className="w-5 h-5 text-slate-300" />
+                <Download className="w-5 h-5 text-blue-200" />
                 <span>BAIXAR PDF</span>
               </button>
 

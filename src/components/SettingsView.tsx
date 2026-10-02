@@ -508,12 +508,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     Senha de Acesso às Configurações (PIN)
                   </label>
                   <p className="text-[11px] text-slate-500 font-medium">
-                    Senha de 4 dígitos para proteger o acesso (padrão: 1111).
+                    Senha confidencial de 4 dígitos para proteger o painel.
                   </p>
                 </div>
-                <div className="w-24">
+                <div className="w-28">
                   <input
-                    type="text"
+                    type="password"
                     maxLength={4}
                     pattern="[0-9]*"
                     value={companyForm.adminPin || '1111'}
@@ -521,7 +521,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       const val = e.target.value.replace(/\D/g, '').slice(0, 4);
                       setCompanyForm(prev => ({ ...prev, adminPin: val }));
                     }}
-                    className="w-full h-10 text-center font-mono font-bold text-base tracking-widest bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-blue-600 shadow-xs"
+                    placeholder="••••"
+                    className="w-full h-10 text-center font-mono font-bold text-lg tracking-widest bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:border-blue-600 shadow-xs"
                   />
                 </div>
               </div>

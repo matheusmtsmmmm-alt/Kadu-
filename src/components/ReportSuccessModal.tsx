@@ -18,14 +18,12 @@ interface ReportSuccessModalProps {
   report: MaintenanceReport;
   settings: CompanySettings;
   onClose: () => void;
-  onViewPdf?: () => void;
 }
 
 export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
   report,
   settings,
-  onClose,
-  onViewPdf
+  onClose
 }) => {
   const [showWhatsappModal, setShowWhatsappModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -106,20 +104,8 @@ export const ReportSuccessModal: React.FC<ReportSuccessModalProps> = ({
           </p>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons: Baixar, WhatsApp, E-mail */}
         <div className="space-y-3">
-          {/* Visualizar PDF na Tela */}
-          {onViewPdf && (
-            <button
-              type="button"
-              onClick={onViewPdf}
-              className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-base rounded-2xl flex items-center justify-center gap-3 shadow-md shadow-slate-950/20 active:scale-[0.98] transition-all cursor-pointer"
-            >
-              <Eye className="w-5 h-5 text-blue-300" />
-              <span>VISUALIZAR PDF NA TELA</span>
-            </button>
-          )}
-
           {/* 1. Baixar PDF */}
           <button
             type="button"

@@ -62,10 +62,23 @@ export function readDb() {
       }
     }
     if (parsed.machines && Array.isArray(parsed.machines)) {
-      // Clean out any outdated compressor maq_3 if present
-      parsed.machines = parsed.machines.filter((m: any) => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'));
+      // Clean out any outdated compressor maq_3 if present and ensure Oppeano is client
+      parsed.machines = parsed.machines
+        .filter((m: any) => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'))
+        .map((m: any) => ({
+          ...m,
+          clientName: m.clientName && m.clientName !== 'Embalagens Brasil Sul' && m.clientName !== 'Kadu Manutenções' ? m.clientName : 'Oppeano'
+        }));
     } else {
       parsed.machines = INITIAL_APP_DATA.machines;
+    }
+    if (parsed.clients && Array.isArray(parsed.clients)) {
+      parsed.clients = parsed.clients.filter((c: any) => c.id !== 'cli_1' && c.id !== 'cli_2' && c.id !== 'cli_3');
+      if (parsed.clients.length === 0) {
+        parsed.clients = INITIAL_APP_DATA.clients;
+      }
+    } else {
+      parsed.clients = INITIAL_APP_DATA.clients;
     }
     if (!parsed.version) {
       parsed.version = 1;

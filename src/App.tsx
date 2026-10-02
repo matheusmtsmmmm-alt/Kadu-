@@ -516,21 +516,6 @@ export default function App() {
           report={justFinishedReport}
           settings={company}
           onClose={() => setJustFinishedReport(null)}
-          onViewPdf={() => {
-            setViewingPdfReport(justFinishedReport);
-            setJustFinishedReport(null);
-          }}
-        />
-      )}
-
-      {/* ============================================================== */}
-      {/* PDF VIEWER MODAL */}
-      {/* ============================================================== */}
-      {viewingPdfReport && (
-        <PdfViewerModal
-          report={viewingPdfReport}
-          settings={company}
-          onClose={() => setViewingPdfReport(null)}
         />
       )}
 
@@ -583,14 +568,14 @@ export default function App() {
               })}
             </div>
 
-            {/* Error Message */}
+            {/* Error Message or Neutral Prompt (Nunca exibir a senha na tela) */}
             {pinError ? (
               <div className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 py-1.5 px-3 rounded-xl mb-3 animate-shake">
                 {pinError}
               </div>
             ) : (
               <div className="text-[11px] font-medium text-slate-400 mb-3">
-                Dica: senha padrão <span className="font-mono font-bold text-slate-600">{data?.companySettings?.adminPin || '1111'}</span>
+                Digite a senha de 4 dígitos para desbloquear
               </div>
             )}
 

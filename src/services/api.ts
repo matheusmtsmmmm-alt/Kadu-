@@ -54,7 +54,19 @@ export function getLocalCache(): AppStateData | null {
     
     // Clean out any outdated compressor maq_3 if present and preserve user deletions
     if (parsed && Array.isArray(parsed.machines)) {
-      parsed.machines = parsed.machines.filter(m => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'));
+      parsed.machines = parsed.machines
+        .filter(m => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'))
+        .map(m => ({
+          ...m,
+          clientName: m.clientName && m.clientName !== 'Embalagens Brasil Sul' && m.clientName !== 'Kadu Manutenções' ? m.clientName : 'Oppeano'
+        }));
+    }
+
+    if (parsed && Array.isArray(parsed.clients)) {
+      parsed.clients = parsed.clients.filter(c => c.id !== 'cli_1' && c.id !== 'cli_2' && c.id !== 'cli_3');
+      if (parsed.clients.length === 0) {
+        parsed.clients = [...INITIAL_APP_DATA.clients];
+      }
     }
 
     // Auto-heal logoUrl in cached companySettings so custom domain never has missing logo
@@ -95,13 +107,18 @@ export async function fetchAppData(): Promise<AppStateData> {
 
     // Respect server state and preserve user deletions
     let baseMachines = Array.isArray(serverData.machines) ? serverData.machines : INITIAL_APP_DATA.machines;
-    baseMachines = baseMachines.filter(m => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'));
+    baseMachines = baseMachines
+      .filter(m => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'))
+      .map(m => ({
+        ...m,
+        clientName: m.clientName && m.clientName !== 'Embalagens Brasil Sul' && m.clientName !== 'Kadu Manutenções' ? m.clientName : 'Oppeano'
+      }));
 
-    const baseClients = [...(serverData.clients?.length ? serverData.clients : INITIAL_APP_DATA.clients)];
-    for (const c of INITIAL_APP_DATA.clients) {
-      if (!baseClients.some(existing => existing.id === c.id || existing.name === c.name)) {
-        baseClients.push(c);
-      }
+    let baseClients = Array.isArray(serverData.clients) && serverData.clients.length > 0
+      ? serverData.clients.filter(c => c.id !== 'cli_1' && c.id !== 'cli_2' && c.id !== 'cli_3')
+      : INITIAL_APP_DATA.clients;
+    if (baseClients.length === 0) {
+      baseClients = [...INITIAL_APP_DATA.clients];
     }
 
     const baseTechnicians = serverData.technicians?.length ? serverData.technicians : INITIAL_APP_DATA.technicians;
@@ -140,7 +157,18 @@ export async function fetchAppData(): Promise<AppStateData> {
       fallback = INITIAL_APP_DATA;
     }
     if (fallback.machines && Array.isArray(fallback.machines)) {
-      fallback.machines = fallback.machines.filter(m => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'));
+      fallback.machines = fallback.machines
+        .filter(m => m.id !== 'maq_3' && m.tag !== 'MQ-03' && !m.name?.includes('Compressor'))
+        .map(m => ({
+          ...m,
+          clientName: m.clientName && m.clientName !== 'Embalagens Brasil Sul' && m.clientName !== 'Kadu Manutenções' ? m.clientName : 'Oppeano'
+        }));
+    }
+    if (fallback.clients && Array.isArray(fallback.clients)) {
+      fallback.clients = fallback.clients.filter(c => c.id !== 'cli_1' && c.id !== 'cli_2' && c.id !== 'cli_3');
+      if (fallback.clients.length === 0) {
+        fallback.clients = [...INITIAL_APP_DATA.clients];
+      }
     }
 
     if (fallback.companySettings) {
@@ -423,7 +451,8 @@ export async function saveSettings(settings: {
     saveSettingsToFirestore({
       companySettings: settings.companySettings as CompanySettings,
       checklistTemplate: settings.checklistTemplate,
-      assistants: settings.assistants
+      assistants: settings.assistants,
+      technicians: settings.technicians
     }).catch(err => {
       console.warn('Firestore save settings error:', err);
     });

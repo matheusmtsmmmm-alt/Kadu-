@@ -35,7 +35,7 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
     pavilhao: 'P1',
     serialNumber: '',
     tag: '',
-    clientName: clients[0]?.name || 'Kadu Manutenções',
+    clientName: clients[0]?.name || 'Oppeano',
     horometer: '',
     location: '',
     manufacturer: ''
@@ -76,7 +76,7 @@ export const MachinesView: React.FC<MachinesViewProps> = ({
       pavilhao: selectedPavilhao === 'P2' ? 'P2' : 'P1',
       serialNumber: '',
       tag: '',
-      clientName: clients[0]?.name || 'Kadu Manutenções',
+      clientName: clients[0]?.name || 'Oppeano',
       horometer: '',
       location: selectedPavilhao === 'P2' ? 'Produção 2 (P2)' : 'Produção 1 (P1)',
       manufacturer: ''
